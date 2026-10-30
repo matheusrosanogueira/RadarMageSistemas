@@ -8,5 +8,6 @@ deployment:
     - /bin/mkdir -p $DEPLOYPATH/data
     - /bin/cp -R admin assets inc $DEPLOYPATH/
     - /bin/cp .htaccess LEIA-ME.txt *.php $DEPLOYPATH/
+    - /bin/cp inc/.htaccess $DEPLOYPATH/inc/.htaccess
     - /bin/cp data/.htaccess $DEPLOYPATH/data/.htaccess
     - /bin/chmod 755 $DEPLOYPATH/data

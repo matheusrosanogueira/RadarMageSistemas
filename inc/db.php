@@ -18,6 +18,9 @@ define('RADAR_DB', RADAR_ROOT . '/data/radar.db');
 function db(): PDO {
     static $pdo = null;
     if ($pdo) return $pdo;
+    if (!extension_loaded('pdo_sqlite')) radar_parar('A extensão pdo_sqlite do PHP não está ativa. No cPanel, abra "Selecionar versão do PHP" e marque pdo_sqlite e sqlite3.');
+    if (!is_dir(dirname(RADAR_DB)) && !@mkdir(dirname(RADAR_DB), 0755, true)) radar_parar('Não consegui criar a pasta data/. Crie-a dentro da pasta do site e dê permissão 775.');
+    if (!is_writable(dirname(RADAR_DB))) radar_parar('A pasta data/ não permite gravação. No Gerenciador de arquivos, botão direito em data/ > Alterar permissões > 775.');
 
     $novo = !file_exists(RADAR_DB);
     if (!is_dir(dirname(RADAR_DB))) mkdir(dirname(RADAR_DB), 0755, true);
@@ -31,6 +34,14 @@ function db(): PDO {
     db_schema($pdo);
     if ($novo) db_seed($pdo);
     return $pdo;
+}
+
+/** Para com uma página legível (em vez de um erro 500 em branco) */
+function radar_parar(string $motivo): never {
+    http_response_code(500);
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<!doctype html><meta charset="utf-8"><title>Radar — configuração</title><body style="font-family:system-ui;background:#0A0718;color:#ECE9F8;padding:40px;max-width:640px;margin:auto"><h1 style="font-size:22px">O Radar ainda não consegue abrir</h1><p style="color:#A9A3C6;line-height:1.6">' . htmlspecialchars($motivo) . '</p><p style="color:#6E6890;font-size:13px">Depois de corrigir, recarregue a página. Para ver tudo de uma vez, abra <code>diagnostico.php</code>.</p></body>';
+    exit;
 }
 
 function db_schema(PDO $pdo): void {
