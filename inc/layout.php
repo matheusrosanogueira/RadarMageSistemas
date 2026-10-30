@@ -2,7 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__ . '/functions.php';
 
-function layout_topo(string $titulo, string $pagina, string $subtitulo = ''): void {
+function layout_topo(string $titulo, string $pagina, string $subtitulo = '', array $og = []): void {
     $atual = versao_atual();
     $abertas = count(tarefas_abertas());
     $nts = count(nts_abertas());
@@ -32,8 +32,13 @@ function layout_topo(string $titulo, string $pagina, string $subtitulo = ''): vo
 <title><?= e($titulo) ?> · <?= e($site) ?></title>
 <meta name="description" content="<?= e(cfg('descricao')) ?>">
 <meta name="theme-color" content="#0A0718">
-<meta property="og:title" content="<?= e($titulo) ?> · <?= e($site) ?>">
-<meta property="og:description" content="<?= e(cfg('descricao')) ?>">
+<meta property="og:title" content="<?= e($og['titulo'] ?? ($titulo . ' · ' . $site)) ?>">
+<meta property="og:description" content="<?= e($og['descricao'] ?? cfg('descricao')) ?>">
+<?php if (!empty($og['url'])): ?><meta property="og:url" content="<?= e($og['url']) ?>"><link rel="canonical" href="<?= e($og['url']) ?>"><?php endif; ?>
+<meta property="og:type" content="<?= e($og['tipo'] ?? 'website') ?>">
+<meta property="og:image" content="<?= e(url_base()) ?>/og.php?<?= e($og['imagem'] ?? 't=' . rawurlencode($titulo)) ?>">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" type="application/rss+xml" title="<?= e($site) ?> — versões e alterações" href="feed.php">
 <meta property="og:site_name" content="<?= e($site) ?>">
 <meta property="og:locale" content="pt_BR">
 <link rel="icon" href="assets/favicon.png" type="image/png">
@@ -76,7 +81,7 @@ function layout_topo(string $titulo, string $pagina, string $subtitulo = ''): vo
       <p class="instalacao-aviso">
         <?php if ($atras === null): ?>Versão <?= e($minha) ?> não reconhecida.
         <?php elseif ($atras === 0): ?>Você está na versão mais recente.
-        <?php else: ?>Você está <?= $atras ?> <?= plural($atras, 'versão', 'versões') ?> atrás. <a href="versoes.php">Veja em Versões o que ainda não chegou.</a><?php endif; ?>
+        <?php else: ?>Você está <?= $atras ?> <?= plural($atras, 'versão', 'versões') ?> atrás. <a href="desde.php">Veja tudo o que mudou desde a sua.</a><?php endif; ?>
         <button type="button" class="limpar" id="limpar-versao">esquecer</button>
       </p>
     <?php else: ?>
@@ -109,7 +114,7 @@ function layout_rodape(): void {
   </main>
   <footer class="rodape">
     <div><?= e(cfg('site_nome')) ?> · <?= e(cfg('empresa')) ?><?php if (cfg('site_url')): ?> · <a href="<?= e(cfg('site_url')) ?>"><?= e(preg_replace('#^https?://#', '', cfg('site_url'))) ?></a><?php endif; ?></div>
-    <div><a href="admin/">Área administrativa</a></div>
+    <div><a href="status.php">Status do Radar</a> · <a href="feed.php">RSS</a> · <a href="admin/">Área administrativa</a></div>
   </footer>
 </div>
 <script src="assets/app.js?v=2"></script>

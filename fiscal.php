@@ -57,7 +57,7 @@ titulo_pagina('Fiscal', 'Sefaz e Notas Técnicas');
     <tbody>
       <?php foreach ($abertas as $nt): ?>
         <tr>
-          <td class="nowrap"><?php if ($nt['tarefa_numero']): ?><span class="num">#<?= (int)$nt['tarefa_numero'] ?></span> <?php endif; ?><b><?= e($nt['codigo']) ?></b></td>
+          <td class="nowrap"><?php if ($nt['tarefa_numero']): ?><span class="num"><a href="t.php?n=<?= (int)$nt['tarefa_numero'] ?>">#<?= (int)$nt['tarefa_numero'] ?></a></span> <?php endif; ?><b><?= e($nt['codigo']) ?></b></td>
           <td><?= e($nt['assunto']) ?><?php if ($nt['observacao']): ?><br><small><?= e($nt['observacao']) ?></small><?php endif; ?></td>
           <td class="nowrap"><?= data_br($nt['homologacao']) ?></td>
           <td class="nowrap"><?= data_br($nt['producao']) ?></td>
@@ -79,7 +79,7 @@ titulo_pagina('Fiscal', 'Sefaz e Notas Técnicas');
     <tbody>
       <?php foreach ($atendidas as $nt): ?>
         <tr>
-          <td class="nowrap"><?php if ($nt['tarefa_numero']): ?><span class="num">#<?= (int)$nt['tarefa_numero'] ?></span> <?php endif; ?><b><?= e($nt['codigo']) ?></b></td>
+          <td class="nowrap"><?php if ($nt['tarefa_numero']): ?><span class="num"><a href="t.php?n=<?= (int)$nt['tarefa_numero'] ?>">#<?= (int)$nt['tarefa_numero'] ?></a></span> <?php endif; ?><b><?= e($nt['codigo']) ?></b></td>
           <td><?= e($nt['assunto']) ?></td>
           <td class="nowrap"><?= data_br($nt['homologacao']) ?></td>
           <td class="nowrap"><?= data_br($nt['producao']) ?></td>

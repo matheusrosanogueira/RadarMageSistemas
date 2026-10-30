@@ -323,3 +323,20 @@ details > :not(summary) { animation: abrir .18s ease-out; }
   .rodape { padding: 20px 16px 30px; }
   body { padding-bottom: env(safe-area-inset-bottom); }
 }
+
+/* ---------- onda 1 ---------- */
+.nota-mage { background: var(--violet-suave); border-left: 3px solid var(--violet); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0 12px; color: var(--texto); line-height: 1.55; }
+.nota-mage b { color: var(--violet); }
+.selo-h-ok { border-color: var(--ok); color: var(--ok); } .selo-h-inst { border-color: var(--alerta); color: var(--alerta); } .selo-h-fora { border-color: var(--magenta); color: var(--magenta); } .selo-h-teste { border-color: var(--texto-3); color: var(--texto-2); }
+.versao-meta .selo { margin-left: 6px; vertical-align: 1px; }
+.compartilhar { margin-left: 8px; color: var(--texto-3); }
+.versao-numero a { color: inherit; }
+.trilha { color: var(--texto-3); margin: -10px 0 16px; }
+.trilha a { color: var(--texto-2); }
+.tags-linha { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 14px; }
+.ficha { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px 20px; }
+.ficha div { padding: 8px 0; border-top: 1px solid var(--linha); }
+.ficha dt { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--texto-3); }
+.ficha dd { margin: 2px 0 0; }
+.cards.cards-3 { grid-template-columns: repeat(3, 1fr); }
+.tarefas .num a { color: inherit; }

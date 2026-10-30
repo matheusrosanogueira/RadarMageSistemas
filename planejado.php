@@ -16,9 +16,9 @@ titulo_pagina('Planejado', 'As tarefas grandes');
   <ul class="lista tarefas">
     <?php foreach ($abertas as $t): ?>
       <li class="<?= $t['em_andamento'] ? 'andamento' : '' ?>">
-        <span class="num">#<?= (int)$t['numero'] ?></span>
+        <span class="num"><a href="t.php?n=<?= (int)$t['numero'] ?>">#<?= (int)$t['numero'] ?></a></span>
         <span class="tit"><?= e($t['titulo']) ?><?php if ($t['descricao']): ?> <small>— <?= e($t['descricao']) ?></small><?php endif; ?></span>
-        <span class="tags"><?php if ($t['area']): ?><i class="tag"><?= e($t['area']) ?></i><?php endif; ?><i class="tag <?= tipo_classe($t['tipo']) ?>"><?= e($t['tipo']) ?></i></span>
+        <span class="tags"><?php if ($t['area']): ?><i class="tag"><?= e($t['area']) ?></i><?php endif; ?><?php if (mb_strtolower($t['area'] ?? '') !== $t['tipo']): ?><i class="tag <?= tipo_classe($t['tipo']) ?>"><?= e($t['tipo']) ?></i><?php endif; ?></span>
         <time><?= tempo_relativo($t['criada_em']) ?></time>
       </li>
     <?php endforeach; ?>
@@ -31,9 +31,9 @@ titulo_pagina('Planejado', 'As tarefas grandes');
   <ul class="lista tarefas">
     <?php foreach ($encerradas as $t): ?>
       <li>
-        <span class="num">#<?= (int)$t['numero'] ?></span>
+        <span class="num"><a href="t.php?n=<?= (int)$t['numero'] ?>">#<?= (int)$t['numero'] ?></a></span>
         <span class="tit"><?= e($t['titulo']) ?><?php if ($t['descricao']): ?> <small>— <?= e($t['descricao']) ?></small><?php endif; ?></span>
-        <span class="tags"><?php if ($t['area']): ?><i class="tag"><?= e($t['area']) ?></i><?php endif; ?><i class="tag <?= tipo_classe($t['tipo']) ?>"><?= e($t['tipo']) ?></i></span>
+        <span class="tags"><?php if ($t['area']): ?><i class="tag"><?= e($t['area']) ?></i><?php endif; ?><?php if (mb_strtolower($t['area'] ?? '') !== $t['tipo']): ?><i class="tag <?= tipo_classe($t['tipo']) ?>"><?= e($t['tipo']) ?></i><?php endif; ?></span>
         <time><?= $t['versao_numero'] ? 'saiu na ' . e($t['versao_numero']) : 'encerrada ' . tempo_relativo($t['encerrada_em']) ?></time>
       </li>
     <?php endforeach; ?>

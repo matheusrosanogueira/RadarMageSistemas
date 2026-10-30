@@ -113,6 +113,37 @@ function db_schema(PDO $pdo): void {
         fim TEXT,
         pior TEXT NOT NULL DEFAULT 'amarela'
     );
+    CREATE TABLE IF NOT EXISTS clientes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        chave TEXT NOT NULL UNIQUE,
+        nome TEXT NOT NULL,
+        versao TEXT DEFAULT '',
+        uf TEXT DEFAULT '',
+        modulos TEXT DEFAULT '',
+        email TEXT DEFAULT '',
+        telefone TEXT DEFAULT '',
+        avisar_versao INTEGER NOT NULL DEFAULT 1,
+        avisar_sefaz INTEGER NOT NULL DEFAULT 0,
+        observacao TEXT DEFAULT '',
+        criado_em TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+        visto_em TEXT,
+        versao_informada_em TEXT
+    );
+    CREATE TABLE IF NOT EXISTS avisos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tipo TEXT NOT NULL,
+        referencia TEXT NOT NULL DEFAULT '',
+        cliente_id INTEGER REFERENCES clientes(id) ON DELETE CASCADE,
+        canal TEXT NOT NULL,
+        destino TEXT NOT NULL,
+        assunto TEXT DEFAULT '',
+        mensagem TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pendente',
+        erro TEXT DEFAULT '',
+        criado_em TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+        enviado_em TEXT
+    );
+    CREATE INDEX IF NOT EXISTS ix_avisos_status ON avisos(status);
     CREATE INDEX IF NOT EXISTS ix_alt_versao ON alteracoes(versao_id);
     CREATE INDEX IF NOT EXISTS ix_alt_data ON alteracoes(criada_em);
     CREATE INDEX IF NOT EXISTS ix_tar_status ON tarefas(status);
@@ -122,7 +153,7 @@ function db_schema(PDO $pdo): void {
 
     // migrações: colunas acrescentadas depois da primeira versão
     $novas = [
-        'versoes'         => ['origem TEXT NOT NULL DEFAULT \'manual\'', 'editado INTEGER NOT NULL DEFAULT 0', 'alteracoes_total INTEGER', 'assuntos_total INTEGER'],
+        'versoes'         => ['origem TEXT NOT NULL DEFAULT \'manual\'', 'editado INTEGER NOT NULL DEFAULT 0', 'alteracoes_total INTEGER', 'assuntos_total INTEGER', 'nota_mage TEXT DEFAULT \'\'', 'homologacao TEXT DEFAULT \'\'', 'homologada_em TEXT', 'avisada INTEGER NOT NULL DEFAULT 0'],
         'alteracoes'      => ['origem TEXT NOT NULL DEFAULT \'manual\'', 'editado INTEGER NOT NULL DEFAULT 0'],
         'tarefas'         => ['origem TEXT NOT NULL DEFAULT \'manual\'', 'editado INTEGER NOT NULL DEFAULT 0', 'labels TEXT DEFAULT \'\'', 'responsaveis TEXT DEFAULT \'\'', 'comentarios INTEGER DEFAULT 0'],
         'notas_tecnicas'  => ['origem TEXT NOT NULL DEFAULT \'manual\'', 'editado INTEGER NOT NULL DEFAULT 0'],

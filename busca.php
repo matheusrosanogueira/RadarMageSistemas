@@ -31,7 +31,7 @@ layout_topo('Busca', 'busca');
 <?php if ($res['tarefas']): ?>
 <section class="bloco"><div class="bloco-cab"><h2>Tarefas</h2><span class="contagem"><?= count($res['tarefas']) ?></span></div>
   <ul class="lista tarefas">
-    <?php foreach ($res['tarefas'] as $t): ?><li class="<?= $t['em_andamento'] ? 'andamento' : '' ?>"><span class="num mono">#<?= (int)$t['numero'] ?></span><span class="tit"><?= realce($t['titulo'], $q) ?><?php if ($t['descricao']): ?> <small>— <?= realce($t['descricao'], $q) ?></small><?php endif; ?></span><span class="tags"><?php if ($t['area']): ?><i class="tag"><?= e($t['area']) ?></i><?php endif; ?><i class="tag <?= tipo_classe($t['tipo']) ?>"><?= e($t['tipo']) ?></i></span><time><?= $t['status'] === 'aberta' ? 'aberta ' . tempo_relativo($t['criada_em']) : ($t['versao_numero'] ? 'saiu na ' . e($t['versao_numero']) : 'encerrada') ?></time></li><?php endforeach; ?>
+    <?php foreach ($res['tarefas'] as $t): ?><li class="<?= $t['em_andamento'] ? 'andamento' : '' ?>"><span class="num mono">#<?= (int)$t['numero'] ?></span><span class="tit"><?= realce($t['titulo'], $q) ?><?php if ($t['descricao']): ?> <small>— <?= realce($t['descricao'], $q) ?></small><?php endif; ?></span><span class="tags"><?php if ($t['area']): ?><i class="tag"><?= e($t['area']) ?></i><?php endif; ?><?php if (mb_strtolower($t['area'] ?? '') !== $t['tipo']): ?><i class="tag <?= tipo_classe($t['tipo']) ?>"><?= e($t['tipo']) ?></i><?php endif; ?></span><time><?= $t['status'] === 'aberta' ? 'aberta ' . tempo_relativo($t['criada_em']) : ($t['versao_numero'] ? 'saiu na ' . e($t['versao_numero']) : 'encerrada') ?></time></li><?php endforeach; ?>
   </ul>
 </section>
 <?php endif; ?>

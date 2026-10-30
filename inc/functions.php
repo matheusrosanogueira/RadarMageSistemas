@@ -323,6 +323,44 @@ function md_inline(string $s): string {
     return $s;
 }
 
+/* ---------- homologação Mage ---------- */
+function homologacoes(): array {
+    return ['' => 'sem avaliação', 'teste' => 'em teste na Mage', 'liberada' => 'liberada pela Mage', 'ressalva' => 'liberada com ressalva', 'aguarde' => 'aguarde: não atualize ainda'];
+}
+function homologacao_classe(string $h): string {
+    return match ($h) { 'liberada' => 'ok', 'ressalva' => 'inst', 'aguarde' => 'fora', 'teste' => 'teste', default => '' };
+}
+function selo_homologacao(array $v): string {
+    $h = (string)($v['homologacao'] ?? ''); if ($h === '') return '';
+    return '<span class="selo mono selo-h-' . homologacao_classe($h) . '" title="' . ($v['homologada_em'] ? 'desde ' . data_br($v['homologada_em'], true) : '') . '">' . e(homologacoes()[$h] ?? $h) . '</span>';
+}
+
+/** Versões publicadas mais novas que $minha, da mais antiga para a mais nova */
+function versoes_desde(string $minha): array {
+    $out = [];
+    foreach (versoes_todas() as $v) if ($v['publicada_em'] && version_compare($v['numero'], $minha, '>')) $out[] = $v;
+    usort($out, fn($a, $b) => version_compare($a['numero'], $b['numero']));
+    return $out;
+}
+
+function versao_por_numero(string $numero): ?array {
+    foreach (versoes_todas() as $v) if ($v['numero'] === $numero) return $v;
+    return null;
+}
+
+function tarefa_por_numero(int $numero): ?array {
+    $st = db()->prepare("SELECT t.*, v.numero AS versao_numero FROM tarefas t LEFT JOIN versoes v ON v.id = t.versao_id WHERE t.produto = ? AND t.numero = ?");
+    $st->execute([produto(), $numero]);
+    return $st->fetch() ?: null;
+}
+
+function url_base(): string {
+    $u = rtrim(cfg('radar_url'), '/');
+    if ($u !== '') return $u;
+    $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+    return ($https ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? '/'), '/\\');
+}
+
 /* ---------- etiquetas ---------- */
 function tipo_classe(string $tipo): string {
     return match ($tipo) { 'bug' => 'tag-bug', 'fiscal' => 'tag-fiscal', 'melhoria' => 'tag-melhoria', default => 'tag-geral' };

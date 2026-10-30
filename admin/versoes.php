@@ -13,12 +13,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!preg_match('/^\d+(\.\d+){0,3}$/', $numero)) { flash('Número de versão inválido. Use o formato 1.2.3.', 'erro'); redir('versoes.php' . ($id ? "?editar=$id" : '')); }
         $pub = post('publicada') ? normaliza_dt(post('publicada_em'), true) : null;
         $dados = [$numero, post('codinome'), post('resumo'), post('notas'), post('como_atualizar'), $pub];
+        $hom = array_key_exists(post('homologacao'), homologacoes()) ? post('homologacao') : '';
         try {
             if ($id) {
-                $pdo->prepare("UPDATE versoes SET editado=1, numero=?, codinome=?, resumo=?, notas=?, como_atualizar=?, publicada_em=? WHERE id=?")->execute([...$dados, $id]);
+                $antes = versao_por_id($id);
+                // editar só a nota/homologação da Mage não marca a versão como "editada" (a sincronização continua atualizando as notas do fornecedor)
+                $soMage = $antes && $antes['origem'] === 'lojadev' && $antes['numero'] === $numero && $antes['codinome'] === post('codinome') && $antes['resumo'] === post('resumo') && $antes['notas'] === post('notas') && $antes['como_atualizar'] === post('como_atualizar');
+                $pdo->prepare("UPDATE versoes SET editado=CASE WHEN ? THEN editado ELSE 1 END, numero=?, codinome=?, resumo=?, notas=?, como_atualizar=?, publicada_em=? WHERE id=?")->execute([$soMage ? 1 : 0, ...$dados, $id]);
+                $pdo->prepare("UPDATE versoes SET nota_mage=?, homologacao=?, homologada_em=CASE WHEN homologacao=? THEN homologada_em ELSE ? END WHERE id=?")->execute([post('nota_mage'), $hom, $hom, $hom ? date('Y-m-d H:i:s') : null, $id]);
                 flash("Versão $numero salva.");
             } else {
-                $pdo->prepare("INSERT INTO versoes(numero, codinome, resumo, notas, como_atualizar, publicada_em, produto) VALUES (?,?,?,?,?,?,?)")->execute([...$dados, produto()]);
+                $pdo->prepare("INSERT INTO versoes(numero, codinome, resumo, notas, como_atualizar, publicada_em, produto, nota_mage, homologacao, homologada_em) VALUES (?,?,?,?,?,?,?,?,?,?)")->execute([...$dados, produto(), post('nota_mage'), $hom, $hom ? date('Y-m-d H:i:s') : null]);
                 $id = (int)$pdo->lastInsertId();
                 flash("Versão $numero criada.");
             }
@@ -82,6 +87,14 @@ admin_topo('Versões', 'versoes');
       <label>Número<input name="numero" required pattern="[0-9]+(\.[0-9]+)*" value="<?= e($editar['numero'] ?? sugerir_proxima()) ?>"></label>
       <label>Codinome <small>opcional, ex.: "DRE e Curva ABC"</small><input name="codinome" value="<?= e($editar['codinome'] ?? '') ?>"></label>
     </div>
+    <div class="destaque">
+      <h3>A voz da <?= e(cfg('empresa')) ?></h3>
+      <p class="ajuda">Aparece acima das notas do fornecedor e não é sobrescrito pela sincronização. Use para dizer o que a Mage testou, o que recomenda e quando liberou.</p>
+      <div class="linha-campos">
+        <label>Homologação<select name="homologacao"><?php foreach (homologacoes() as $k => $r): ?><option value="<?= $k ?>" <?= ($editar['homologacao'] ?? '') === $k ? 'selected' : '' ?>><?= e($r) ?></option><?php endforeach; ?></select></label>
+        <label style="grid-column: span 2">Nota da Mage <small>Markdown leve, uma ou duas frases</small><input name="nota_mage" value="<?= e($editar['nota_mage'] ?? '') ?>" placeholder="Já testamos em 12 clientes. Quem usa balança Toledo, aguarde a próxima."></label>
+      </div>
+    </div>
     <label>Em uma linha <small>o resumo que abre a versão</small><input name="resumo" value="<?= e($editar['resumo'] ?? '') ?>" placeholder="o sistema passou a responder duas perguntas que não respondia…"></label>
     <label>Notas da versão <small>Markdown leve: <code>###</code> título, <code>**negrito**</code>, <code>*itálico*</code>, <code>- item</code>, <code>`código`</code>. Título com ⚠️ vira aviso destacado; com 🆕 🧾 🔧 ⚡ vira seção.</small>
       <textarea name="notas" rows="18" class="mono"><?= e($editar['notas'] ?? "### ⚠️ Leia antes de atualizar\n\n\n\n### 🆕 Novo\n\n- \n\n### 🧾 Fiscal\n\n- \n\n### 🔧 Corrigido\n\n- \n\n### ⚡ Desempenho\n\n- ") ?></textarea>
@@ -124,7 +137,7 @@ admin_topo('Versões', 'versoes');
 <section class="painel">
   <div class="painel-cab"><h2>Todas as versões</h2><a class="btn" href="?nova">Nova versão</a></div>
   <table class="adm-tabela">
-    <thead><tr><th>Versão</th><th>Codinome</th><th>Alterações</th><th>Situação</th><th></th></tr></thead>
+    <thead><tr><th>Versão</th><th>Codinome</th><th>Alterações</th><th>Situação</th><th>Mage</th><th></th></tr></thead>
     <tbody>
       <?php if (!$versoes): ?><tr><td colspan="5" class="ajuda">Nenhuma versão. Crie a primeira — normalmente a que está em preparo, sem marcar como publicada.</td></tr><?php endif; ?>
       <?php foreach ($versoes as $v):
@@ -134,6 +147,7 @@ admin_topo('Versões', 'versoes');
           <td><?= e($v['codinome']) ?></td>
           <td><?= $n ?></td>
           <td><?= $v['publicada_em'] ? 'publicada em ' . data_br($v['publicada_em'], true) : '<i class="tag tag-prox">próxima</i>' ?></td>
+          <td><?= ($v['homologacao'] ?? '') ? e(homologacoes()[$v['homologacao']] ?? $v['homologacao']) : '<span class="ajuda">—</span>' ?><?= !empty($v['nota_mage']) ? ' <i class="tag">nota</i>' : '' ?></td>
           <td class="nowrap"><a href="?editar=<?= $v['id'] ?>">editar</a></td>
         </tr>
       <?php endforeach; ?>

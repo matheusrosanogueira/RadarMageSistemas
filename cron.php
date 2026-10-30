@@ -11,6 +11,7 @@
 require_once __DIR__ . '/inc/functions.php';
 header('Content-Type: text/plain; charset=utf-8');
 set_time_limit(120);
+cfg_set('cron_ultimo', date('Y-m-d H:i:s'));
 
 $token = $_GET['token'] ?? '';
 if ($token === '' || !hash_equals(sefaz_token(), $token)) { http_response_code(403); exit("token inválido\n"); }
