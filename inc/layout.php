@@ -23,6 +23,9 @@ function layout_topo(string $titulo, string $pagina, string $subtitulo = '', arr
     $recente = db()->prepare("SELECT COUNT(*) FROM alteracoes WHERE produto = ? AND interno = 0 AND criada_em >= datetime('now','localtime','-24 hours')");
     $recente->execute([produto()]); $recente = (int)$recente->fetchColumn();
     $atras = $minha ? versoes_atras($minha) : null;
+    $cliente = cliente_atual();
+    $modulos = cliente_modulos($cliente);
+    $filtroLigado = filtro_areas() !== null;
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -71,8 +74,19 @@ function layout_topo(string $titulo, string $pagina, string $subtitulo = '', arr
   <a class="produto" href="<?= e(cfg('site_url')) ?>" target="_blank" rel="noopener"><i></i><?= e(cfg('sistema_nome')) ?></a>
 
   <div class="instalacao">
+    <?php if ($cliente): ?>
+      <p class="rotulo">Sua loja</p>
+      <p class="cliente-nome"><b><?= e($cliente['nome']) ?></b><?php if ($cliente['uf']): ?> <span class="mono"><?= e($cliente['uf']) ?></span><?php endif; ?></p>
+      <?php if ($modulos): ?>
+        <form method="get" action="filtro.php" class="filtro-form">
+          <input type="hidden" name="volta" value="<?= e($_SERVER['REQUEST_URI'] ?? 'index.php') ?>">
+          <input type="hidden" name="ligar" value="<?= $filtroLigado ? '0' : '1' ?>">
+          <button type="submit" class="filtro <?= $filtroLigado ? 'ligado' : '' ?>" aria-pressed="<?= $filtroLigado ? 'true' : 'false' ?>"><i></i>Só o que me afeta<small><?= e(implode(', ', $modulos)) ?></small></button>
+        </form>
+      <?php endif; ?>
+    <?php endif; ?>
     <p class="rotulo">A sua instalação</p>
-    <form id="form-versao" autocomplete="off">
+    <form id="form-versao" class="versao-form" autocomplete="off">
       <label class="visually-hidden" for="minha-versao">Sua versão do <?= e(cfg('sistema_nome')) ?></label>
       <input id="minha-versao" name="v" inputmode="decimal" pattern="[0-9]+(\.[0-9]+)*" placeholder="<?= $atual ? e($atual['numero']) : '1.0.0' ?>" value="<?= e($minha) ?>">
       <button type="submit" aria-label="Marcar minha versão">→</button>
@@ -135,16 +149,6 @@ function selo_falta(array $versao): string {
     return falta_para_visitante($versao) ? '<span class="selo selo-falta mono" title="Ainda não chegou na sua instalação">novo para você</span>' : '';
 }
 
-/** Quantas versões publicadas são mais novas que a informada; null se a versão não existe */
-function versoes_atras(string $minha): ?int {
-    $existe = false; $n = 0;
-    foreach (versoes_todas() as $v) {
-        if ($v['numero'] === $minha) $existe = true;
-        if ($v['publicada_em'] && version_compare($v['numero'], $minha, '>')) $n++;
-    }
-    return $existe ? $n : null;
-}
-
 /** Momento da última atualização dos dados: sincronização ou última alteração lançada */
 function atualizado_em(): ?string {
     $rel = lojadev_relatorio();
@@ -179,6 +183,9 @@ function bloco_sefaz_estados(?array $sit, bool $aberto = false): void {
           <?php elseif ($r['instaveis']): ?><?= count($r['instaveis']) ?> <?= plural(count($r['instaveis']), 'estado instável', 'estados instáveis') ?>, <?= $r['no_ar'] ?> no ar
           <?php else: ?>Os <?= $r['no_ar'] ?> estados no ar<?php endif; ?>
         </p>
+        <?php $cl = cliente_atual(); if ($cl && $cl['uf'] && isset($estados[$cl['uf']])): $meu = $estados[$cl['uf']]; ?>
+          <p class="meu-estado uf-<?= $meu['situacao'] ?>"><b><?= e($cl['uf']) ?></b> — o seu estado está <?= ['no_ar' => 'no ar', 'instavel' => 'instável', 'fora' => 'fora do ar'][$meu['situacao']] ?><?= $meu['desde'] ? ' desde ' . data_hora_br($meu['desde']) : '' ?> (autorizador <?= e($meu['autorizador']) ?>)</p>
+        <?php endif; ?>
         <div class="uf-grade">
           <?php foreach ($estados as $uf => $x): ?>
             <span class="uf mono uf-<?= $x['situacao'] ?>" title="<?= e($uf . ' · ' . $x['autorizador'] . ' · ' . ['no_ar' => 'no ar', 'instavel' => 'instável', 'fora' => 'fora do ar'][$x['situacao']] . ($x['desde'] ? ' desde ' . data_hora_br($x['desde']) : '')) ?>"><?= $uf ?></span>

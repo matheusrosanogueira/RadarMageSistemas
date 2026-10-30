@@ -3,6 +3,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/sefaz.php';
 require_once __DIR__ . '/lojadev.php';
+require_once __DIR__ . '/clientes.php';
 
 /* ---------- escape ---------- */
 function e(?string $s): string { return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
@@ -343,6 +344,16 @@ function versoes_desde(string $minha): array {
     return $out;
 }
 
+/** Quantas versões publicadas são mais novas que a informada; null se a versão não existe */
+function versoes_atras(string $minha): ?int {
+    $existe = false; $n = 0;
+    foreach (versoes_todas() as $v) {
+        if ($v['numero'] === $minha) $existe = true;
+        if ($v['publicada_em'] && version_compare($v['numero'], $minha, '>')) $n++;
+    }
+    return $existe ? $n : null;
+}
+
 function versao_por_numero(string $numero): ?array {
     foreach (versoes_todas() as $v) if ($v['numero'] === $numero) return $v;
     return null;
@@ -358,7 +369,11 @@ function url_base(): string {
     $u = rtrim(cfg('radar_url'), '/');
     if ($u !== '') return $u;
     $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
-    return ($https ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? '/'), '/\\');
+    // caminho do Radar dentro do site = pasta do projeto menos a raiz do documento (funciona também de dentro de /admin)
+    $raiz = rtrim(str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? '') ?: ''), '/');
+    $proj = str_replace('\\', '/', realpath(RADAR_ROOT) ?: RADAR_ROOT);
+    $caminho = ($raiz !== '' && str_starts_with($proj, $raiz)) ? substr($proj, strlen($raiz)) : preg_replace('#/admin$#', '', rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? '/'), '/\\'));
+    return ($https ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . rtrim($caminho, '/');
 }
 
 /* ---------- etiquetas ---------- */

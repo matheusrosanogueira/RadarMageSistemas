@@ -52,6 +52,7 @@ function admin_topo(string $titulo, string $pagina): void {
         'versoes'    => ['Versões', 'versoes.php'],
         'tarefas'    => ['Tarefas', 'tarefas.php'],
         'fiscal'     => ['Fiscal', 'fiscal.php'],
+        'clientes'   => ['Clientes', 'clientes.php'],
         'config'     => ['Configurações', 'config.php'],
     ];
     $flash = flash_pegar();

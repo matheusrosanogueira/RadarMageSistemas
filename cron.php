@@ -16,6 +16,16 @@ cfg_set('cron_ultimo', date('Y-m-d H:i:s'));
 $token = $_GET['token'] ?? '';
 if ($token === '' || !hash_equals(sefaz_token(), $token)) { http_response_code(403); exit("token inválido\n"); }
 
+// 0. Backup semanal do banco (mantém os últimos 8)
+$dirB = RADAR_ROOT . '/data/backups';
+if (!is_dir($dirB)) @mkdir($dirB, 0755, true);
+$ultimo = glob("$dirB/radar-*.db"); rsort($ultimo);
+if (!$ultimo || filemtime($ultimo[0]) < time() - 7 * 86400) {
+    db()->exec('PRAGMA wal_checkpoint(TRUNCATE)');
+    $dest = "$dirB/radar-" . date('Y-m-d') . '.db';
+    if (@copy(RADAR_DB, $dest)) { echo "backup: $dest\n"; foreach (array_slice($ultimo, 7) as $velho) @unlink($velho); }
+}
+
 // 1. Sefaz
 if (sefaz_ativo()) {
     $s = sefaz_situacao(true); $r = sefaz_resumo($s);

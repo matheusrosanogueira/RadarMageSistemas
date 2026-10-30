@@ -3,7 +3,7 @@ require_once __DIR__ . '/inc/layout.php';
 
 $proxima = versao_proxima();
 $ultimaPub = versao_ultima_publicada();
-$prontas = alteracoes_proxima();
+$prontas = filtrar_alteracoes(alteracoes_proxima());
 $internas = alteracoes_internas_proxima();
 $publicadas = array_values(array_filter(versoes_todas(), fn($v) => $v['publicada_em']));
 

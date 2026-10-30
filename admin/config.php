@@ -56,6 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else flash('A sincronização falhou: ' . implode('; ', $r['erros']), 'erro');
         redir('config.php');
     }
+    if ($acao === 'api_token') { cfg_set('api_token', bin2hex(random_bytes(16))); flash('Token da API renovado.'); redir('config.php'); }
+    if ($acao === 'radar_url') { cfg_set('radar_url', rtrim(post('radar_url'), '/')); flash('Endereço salvo.'); redir('config.php'); }
     if ($acao === 'sefaz_token') { cfg_set('sefaz_token', bin2hex(random_bytes(12))); flash('Token renovado. Atualize o cron.'); redir('config.php'); }
 
     if ($acao === 'restaurar' && !empty($_FILES['arquivo']['tmp_name'])) {
@@ -74,10 +76,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if (isset($_GET['backup'])) {
-    $pdo->exec('PRAGMA wal_checkpoint(TRUNCATE)');
+    $arq = RADAR_DB; $nome = 'radar-' . date('Y-m-d') . '.db';
+    if (preg_match('/^radar-\d{4}-\d{2}-\d{2}\.db$/', (string)$_GET['backup']) && is_file(RADAR_ROOT . '/data/backups/' . $_GET['backup'])) { $arq = RADAR_ROOT . '/data/backups/' . $_GET['backup']; $nome = $_GET['backup']; }
+    else $pdo->exec('PRAGMA wal_checkpoint(TRUNCATE)');
     header('Content-Type: application/octet-stream');
-    header('Content-Disposition: attachment; filename="radar-' . date('Y-m-d') . '.db"');
-    readfile(RADAR_DB); exit;
+    header('Content-Disposition: attachment; filename="' . $nome . '"');
+    readfile($arq); exit;
 }
 
 if (isset($_GET['exportar'])) {
@@ -164,7 +168,20 @@ admin_topo('Configurações', 'config');
 </section>
 
 <section class="painel">
+  <h2>API</h2>
+  <?php $apiTok = cfg('api_token'); if ($apiTok === '') { $apiTok = bin2hex(random_bytes(16)); cfg_set('api_token', $apiTok); } ?>
+  <p class="ajuda">Para o Mage Lite ou o seu processo de build alimentarem o Radar sem passar pelo painel. Cabeçalho <code>Authorization: Bearer TOKEN</code>. As ações estão documentadas no início de <code>api.php</code>.</p>
+  <textarea readonly rows="1" class="mono" onclick="this.select()"><?= e($apiTok) ?></textarea>
+  <p class="ajuda" style="margin-top:8px">Exemplo — registrar uma alteração:<br><code>curl -H "Authorization: Bearer <?= e($apiTok) ?>" -d "titulo=O caixa aceita PIX parcial" -d "area=PDV" "<?= e(url_base()) ?>/api.php?acao=alteracao"</code></p>
+  <p class="ajuda">Exemplo — o Mage Lite informar a versão de uma loja (sem token, pela chave da loja):<br><code><?= e(url_base()) ?>/c.php?k=CHAVE&amp;v=7.5.6</code> ou <code>api.php?acao=cliente&amp;chave=CHAVE&amp;versao=7.5.6</code> (com token).</p>
+  <form method="post" data-confirmar="Renovar o token da API? Quem usa o antigo para de funcionar."><?= csrf_campo() ?><input type="hidden" name="acao" value="api_token"><button class="btn-mini">renovar token</button></form>
+  <form method="post" style="margin-top:14px"><?= csrf_campo() ?><input type="hidden" name="acao" value="radar_url"><label>Endereço público do Radar <small>usado nos links e nas prévias</small><input name="radar_url" value="<?= e(cfg('radar_url')) ?>" placeholder="<?= e(url_base()) ?>"></label><button class="btn-sec">Salvar</button></form>
+</section>
+
+<section class="painel">
   <h2>Backup</h2>
+  <?php $bks = glob(RADAR_ROOT . '/data/backups/radar-*.db') ?: []; rsort($bks); ?>
+  <?php if ($bks): ?><p class="ajuda">Backups automáticos (o cron guarda um por semana, os últimos 8): <?php foreach ($bks as $b): ?><a href="?backup=<?= e(basename($b)) ?>"><?= e(substr(basename($b), 6, 10)) ?></a> <?php endforeach; ?></p><?php else: ?><p class="ajuda">O cron faz um backup por semana em <code>data/backups/</code>, assim que estiver agendado.</p><?php endif; ?>
   <p class="ajuda">Todo o Radar mora em um arquivo: <code>data/radar.db</code>. Baixe uma cópia de vez em quando.</p>
   <div class="botoes">
     <a class="btn" href="?backup=1">Baixar banco (.db)</a>

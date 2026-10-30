@@ -42,6 +42,22 @@ COMO ALIMENTAR
   Fiscal      — Notas Técnicas com data de homologação e produção; o site
                 calcula quantos dias faltam.
 
+CLIENTES POR CHAVE
+  Admin > Clientes: cada loja ganha uma chave e um link (c.php?k=CHAVE).
+  Abrindo o link, o Radar sabe a loja, a versão e a UF, marca o que ainda
+  não chegou, destaca o estado dela na Sefaz e oferece o filtro "só o que
+  me afeta" (pelos módulos marcados). O Mage Lite pode informar a versão
+  sozinho chamando c.php?k=CHAVE&v=7.5.6 ou a API (abaixo).
+
+API
+  api.php com token (Admin > Configurações > API). Registra alterações,
+  cria/publica versões, marca homologação e recebe a versão das lojas.
+  As ações estão documentadas no início do arquivo.
+
+BACKUP AUTOMÁTICO
+  O cron guarda uma cópia do banco por semana em data/backups/ (últimos 8),
+  disponíveis para download em Admin > Configurações > Backup.
+
 BUSCA E TEMA
   A caixa "Buscar no projeto" na barra lateral procura em versões, alterações,
   tarefas e Notas Técnicas (busca.php). O botão "Tema claro" troca o tema e

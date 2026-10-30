@@ -6,3 +6,5 @@ data/*.lock
 data/*.antes-restauracao-*
 .DS_Store
 Thumbs.db
+data/backups/
+data/og-*.png

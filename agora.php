@@ -11,7 +11,7 @@ $semanas = (int)ceil($dias / 7);
 $st = db()->prepare("SELECT a.*, v.numero AS versao_numero FROM alteracoes a LEFT JOIN versoes v ON v.id = a.versao_id WHERE a.produto = ? AND a.interno = 0 ORDER BY a.criada_em DESC, a.id DESC LIMIT 300");
 $st->execute([produto()]);
 $porDia = [];
-foreach ($st as $a) $porDia[substr($a['criada_em'], 0, 10)][] = $a;
+foreach (filtrar_alteracoes($st->fetchAll()) as $a) $porDia[substr($a['criada_em'], 0, 10)][] = $a;
 
 layout_topo('Agora', 'agora');
 titulo_pagina('Agora', 'O trabalho ao vivo');
@@ -29,7 +29,7 @@ titulo_pagina('Agora', 'O trabalho ao vivo');
 
 <section class="bloco">
   <div class="bloco-cab"><h2>Cada alteração, conforme entra</h2></div>
-  <p class="nota">O título é o mesmo que fica no histórico do projeto. Se tem linha nova aí em cima, alguém está mexendo no sistema neste momento.</p>
+  <p class="nota">O título é o mesmo que fica no histórico do projeto. Se tem linha nova aí em cima, alguém está mexendo no sistema neste momento.<?php if (filtro_areas()): ?> <b>Mostrando só as áreas da sua loja</b> (e o que não tem área).<?php endif; ?></p>
 
   <?php if (!$porDia): ?>
     <p class="vazio">Nenhuma alteração registrada ainda.</p>

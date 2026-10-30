@@ -31,7 +31,7 @@ function bloco_areas(array $alteracoes, string $rotulo, int $totalReal = 0, bool
 
 /** Cartão de uma versão publicada */
 function cartao_versao(array $v, bool $notasAbertas = false, bool $comLink = true): void {
-    $alts = alteracoes_da_versao((int)$v['id']);
+    $alts = filtrar_alteracoes(alteracoes_da_versao((int)$v['id']));
     $issues = tarefas_da_versao((int)$v['id']);
     $falta = falta_para_visitante($v);
     $nAss = max(count($issues), (int)($v['assuntos_total'] ?? 0));
