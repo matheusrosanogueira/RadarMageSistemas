@@ -11,6 +11,11 @@ declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 
 const SEFAZ_URL = 'https://www.nfe.fazenda.gov.br/portal/disponibilidade.aspx';
+// o portal redireciona para a versão com parâmetros; tentamos as duas
+const SEFAZ_URLS = [
+    'https://www.nfe.fazenda.gov.br/portal/disponibilidade.aspx?versao=4.00&tipoConteudo=Skeuqr8PQBY=',
+    'https://www.nfe.fazenda.gov.br/portal/disponibilidade.aspx',
+];
 const SEFAZ_CACHE_MIN = 10;   // idade máxima do cache para a página tentar renovar sozinha
 const SEFAZ_TIMEOUT = 8;      // segundos
 
@@ -223,12 +228,16 @@ function duracao(string $a, ?string $b): string {
 
 /** Baixa e interpreta a página do portal */
 function sefaz_consultar(): array {
-    $res = ['em' => date('Y-m-d H:i:s'), 'autorizadores' => [], 'erro' => null];
-    $html = sefaz_baixar(SEFAZ_URL, $erro);
-    if ($html === null) { $res['erro'] = $erro ?: 'sem resposta do portal'; return $res; }
-    $lista = sefaz_interpretar($html);
-    if (!$lista) { $res['erro'] = 'a página do portal mudou de formato ou veio vazia'; return $res; }
-    $res['autorizadores'] = $lista;
+    $res = ['em' => date('Y-m-d H:i:s'), 'autorizadores' => [], 'erro' => null, 'fonte' => 'portal'];
+    $erros = [];
+    foreach (SEFAZ_URLS as $url) {
+        $html = sefaz_baixar($url, $erro);
+        if ($html === null) { $erros[] = $erro ?: 'sem resposta'; continue; }
+        $lista = sefaz_interpretar($html);
+        if ($lista) { $res['autorizadores'] = $lista; return $res; }
+        $erros[] = 'página sem a tabela de disponibilidade (' . strlen($html) . ' bytes)';
+    }
+    $res['erro'] = implode(' · ', array_unique($erros));
     return $res;
 }
 
@@ -237,10 +246,12 @@ function sefaz_baixar(string $url, ?string &$erro = null): ?string {
     if (function_exists('curl_init')) {
         $ch = curl_init($url);
         curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => true, CURLOPT_MAXREDIRS => 3,
+            CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => true, CURLOPT_MAXREDIRS => 6,
+            CURLOPT_COOKIEFILE => '', CURLOPT_COOKIEJAR => '',   // aceita o cookie de sessão que o portal exige
+            CURLOPT_ENCODING => '',
             CURLOPT_TIMEOUT => SEFAZ_TIMEOUT, CURLOPT_CONNECTTIMEOUT => 5,
-            CURLOPT_USERAGENT => 'Mozilla/5.0 (compatible; RadarMage/1.0; +' . cfg('site_url') . ')',
-            CURLOPT_HTTPHEADER => ['Accept: text/html', 'Accept-Language: pt-BR'],
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36 RadarMage/1.0',
+            CURLOPT_HTTPHEADER => ['Accept: text/html,application/xhtml+xml', 'Accept-Language: pt-BR,pt;q=0.9'],
             CURLOPT_SSL_VERIFYPEER => true,
         ]);
         $html = curl_exec($ch);
