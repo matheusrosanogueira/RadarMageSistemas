@@ -1,0 +1,17 @@
+# Radar Mage
+Options -Indexes
+DirectoryIndex index.php
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+</IfModule>
+<FilesMatch "\.(db|db-wal|db-shm|sqlite)$">
+  Require all denied
+</FilesMatch>

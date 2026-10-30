@@ -1,0 +1,12 @@
+---
+# Deploy via cPanel > Git™ Version Control > "Deploy HEAD Commit".
+# Copia o Radar para a pasta do subdomínio SEM tocar em data/ (onde vive o radar.db).
+# Ajuste DEPLOYPATH se a pasta do subdomínio for outra.
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/magesist/radar.magesistemas.com.br
+    - /bin/mkdir -p $DEPLOYPATH/data
+    - /bin/cp -R admin assets inc $DEPLOYPATH/
+    - /bin/cp .htaccess LEIA-ME.txt *.php $DEPLOYPATH/
+    - /bin/cp data/.htaccess $DEPLOYPATH/data/.htaccess
+    - /bin/chmod 755 $DEPLOYPATH/data

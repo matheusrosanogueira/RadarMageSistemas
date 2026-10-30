@@ -1,0 +1,66 @@
+RADAR MAGE — painel de versões do Mage Lite
+===========================================
+
+O QUE É
+  Um site que mostra aos clientes o que está sendo feito no Mage Lite,
+  o que vem na próxima versão, o histórico de cada versão, as tarefas
+  planejadas e os prazos das Notas Técnicas da Sefaz. Tudo é cadastrado
+  por você num painel administrativo (/admin).
+
+REQUISITOS DA HOSPEDAGEM
+  PHP 8.1 ou superior com PDO SQLite (padrão em praticamente todo CPanel).
+  Nada de MySQL: o banco inteiro é o arquivo data/radar.db, criado sozinho.
+
+INSTALAÇÃO (CPANEL)
+  1. Em "Subdomínios", crie radar.magesistemas.com.br.
+     O CPanel cria a pasta (normalmente public_html/radar ou radar.magesistemas.com.br).
+  2. No "Gerenciador de arquivos", entre nessa pasta e envie o radar-mage.zip.
+  3. Clique com o botão direito no zip > Extract. Apague o zip depois.
+  4. Confira que a pasta data/ tem permissão de escrita (755 costuma bastar;
+     se der erro ao abrir o site, coloque 775 na pasta data/).
+  5. Abra https://radar.magesistemas.com.br/admin — na primeira vez ele pede
+     para você definir usuário e senha. Pronto.
+  6. Se a hospedagem tiver "Selecionar versão do PHP", escolha 8.1+ e confira
+     que as extensões pdo_sqlite e mbstring estão marcadas.
+
+COMO ALIMENTAR
+  Alterações  — uma linha por coisa feita. Aparecem em "Agora" e em
+                "Vindo na próxima". Prefixe a área com dois-pontos:
+                "PDV: o cupom leva o ICMS retido". Prefixe [radar] para
+                marcar como interna (não vai no pacote).
+  Versões     — crie a versão em preparo (sem marcar "publicada"). Quando
+                fechar o pacote, escreva as notas e clique em "Publicar":
+                as alterações do ciclo passam para ela e a próxima já abre.
+  Tarefas     — os assuntos grandes, numerados. "Iniciar" marca em andamento,
+                "Encerrar" fecha dizendo em que versão saiu.
+  Fiscal      — Notas Técnicas com data de homologação e produção; o site
+                calcula quantos dias faltam.
+
+A SUA INSTALAÇÃO
+  O visitante digita a versão dele no alto da página. A partir daí, cada
+  versão que ele ainda não tem ganha o selo "ainda não chegou". Fica gravado
+  no navegador dele por um ano.
+
+SEFAZ (ESTADOS NO AR)
+  O card "Estados no ar" e a seção "Sefaz agora" (página Fiscal) leem a
+  página pública de disponibilidade do Portal da NF-e. Sem certificado.
+  A leitura renova sozinha quando alguém visita o site e o cache tem mais
+  de 10 minutos. Para manter sempre fresca, agende no CPanel > Cron Jobs
+  (a cada 10 minutos) o comando que está em Admin > Configurações > Sefaz.
+  Se a leitura falhar sempre, a hospedagem pode estar bloqueando conexões
+  de saída (cURL) — peça ao suporte para liberar nfe.fazenda.gov.br.
+
+BACKUP
+  Configurações > "Baixar banco (.db)". Guarde o arquivo. Para restaurar,
+  envie-o de volta na mesma tela.
+
+CORES
+  As cores do site estão nas variáveis no topo de assets/style.css
+  (--bg, --violet, --magenta). Mude ali e o site inteiro acompanha.
+
+ESTRUTURA
+  index.php, agora.php, versoes.php, planejado.php, fiscal.php, projeto.php
+  admin/      painel (login, alterações, versões, tarefas, fiscal, config)
+  inc/        banco e funções (bloqueado ao público)
+  data/       radar.db (bloqueado ao público)
+  assets/     css, js, logo

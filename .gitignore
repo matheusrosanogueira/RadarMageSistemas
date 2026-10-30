@@ -1,0 +1,8 @@
+# banco do Radar nasce no servidor; nunca vai para o git
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/*.lock
+data/*.antes-restauracao-*
+.DS_Store
+Thumbs.db
