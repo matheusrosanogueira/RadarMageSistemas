@@ -65,9 +65,9 @@ mark { background: var(--alerta-suave); color: inherit; border-radius: 3px; padd
 .lateral { position: fixed; top: 0; left: 0; bottom: 0; width: var(--lateral); background: var(--bg-2); border-right: 1px solid var(--linha); padding: 22px 18px 18px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; z-index: 60; }
 .marca { display: flex; align-items: center; gap: 12px; color: var(--texto); }
 .marca:hover { text-decoration: none; }
-.marca img { width: 44px; height: 44px; }
+.marca img { width: 46px; height: 46px; filter: drop-shadow(0 2px 8px rgba(124,92,255,.35)); }
 .marca span { display: flex; flex-direction: column; line-height: 1.05; }
-.marca b { font-size: 24px; font-weight: 800; letter-spacing: -.02em; }
+.marca b { font-size: 21px; font-weight: 800; letter-spacing: -.02em; white-space: nowrap; }
 .marca small { font-family: var(--mono); font-size: 10.5px; color: var(--texto-3); letter-spacing: .14em; text-transform: uppercase; margin-top: 3px; }
 .busca input { width: 100%; background: var(--bg); border: 1px solid var(--linha-forte); color: var(--texto); border-radius: 8px; padding: 9px 12px; font: inherit; font-size: 14px; }
 .busca input:focus { border-color: var(--violet); outline: none; }

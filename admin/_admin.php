@@ -63,13 +63,13 @@ function admin_topo(string $titulo, string $pagina): void {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($titulo) ?> · Admin · <?= e(cfg('site_nome')) ?></title>
 <meta name="robots" content="noindex">
-<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../assets/favicon.png" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/admin.css?v=1">
 </head>
 <body>
 <header class="adm-topo">
-  <a class="adm-marca" href="index.php"><img src="../assets/logo.svg" alt="" width="26" height="26"><span><?= e(cfg('site_nome')) ?></span><small>admin</small></a>
+  <a class="adm-marca" href="index.php"><img src="../assets/logo.png" alt="" width="26" height="26"><span><?= e(cfg('site_nome')) ?></span><small>admin</small></a>
   <nav class="adm-nav">
     <?php foreach ($menu as $k => [$r, $h]): ?><a href="<?= $h ?>" <?= $pagina === $k ? 'aria-current="page"' : '' ?>><?= $r ?></a><?php endforeach; ?>
   </nav>

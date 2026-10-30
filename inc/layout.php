@@ -36,7 +36,8 @@ function layout_topo(string $titulo, string $pagina, string $subtitulo = ''): vo
 <meta property="og:description" content="<?= e(cfg('descricao')) ?>">
 <meta property="og:site_name" content="<?= e($site) ?>">
 <meta property="og:locale" content="pt_BR">
-<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -48,8 +49,8 @@ function layout_topo(string $titulo, string $pagina, string $subtitulo = ''): vo
 
 <aside class="lateral" id="lateral">
   <a class="marca" href="index.php" aria-label="<?= e($site) ?>">
-    <img src="assets/logo.svg" alt="" width="44" height="44">
-    <span><b>Radar</b><small><?= e(cfg('empresa')) ?></small></span>
+    <img src="assets/logo.png" alt="" width="46" height="46">
+    <span><b>Radar Mage</b><small><?= e(cfg('empresa')) ?></small></span>
   </a>
   <form class="busca" action="busca.php" role="search">
     <input type="search" name="q" placeholder="Buscar no projeto…" aria-label="Buscar no projeto" value="<?= e($_GET['q'] ?? '') ?>">
@@ -90,7 +91,7 @@ function layout_topo(string $titulo, string $pagina, string $subtitulo = ''): vo
 <div class="pagina">
   <header class="topbar">
     <button class="menu-btn" aria-expanded="false" aria-controls="lateral" aria-label="Abrir menu"><span></span><span></span><span></span></button>
-    <a class="marca-mini" href="index.php"><img src="assets/logo.svg" alt="" width="26" height="26"><b>Radar Mage</b></a>
+    <a class="marca-mini" href="index.php"><img src="assets/logo.png" alt="" width="28" height="28"><b>Radar Mage</b></a>
     <div class="topbar-estado">
       <?php if ($atual): ?><span><b><?= e($atual['numero']) ?></b> é a versão atual</span><?php endif; ?>
       <?php if ($sefazFrase): ?><a class="sefaz-frase <?= $sefazClasse ?>" href="fiscal.php#sefaz"><i></i><?= e($sefazFrase) ?></a><?php endif; ?>
