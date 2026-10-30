@@ -20,8 +20,8 @@ function data_br(?string $s, bool $ano = false): string {
     return $d->format($ano ? 'd/m/Y' : 'd/m');
 }
 
-function data_hora_br(?string $s): string {
-    $d = dt($s); return $d ? $d->format('d/m, H:i') : '—';
+function data_hora_br(?string $s, bool $completa = false): string {
+    $d = dt($s); return $d ? $d->format($completa ? 'd/m/Y H:i:s' : 'd/m, H:i') : '—';
 }
 
 /** "há 6 horas", "ontem", "há 17 dias", "há 1 mês" */
@@ -190,7 +190,7 @@ function areas_conhecidas(): array {
 
 /* ---------- tarefas ---------- */
 function tarefas_abertas(): array {
-    $st = db()->prepare("SELECT * FROM tarefas WHERE produto = ? AND status = 'aberta' ORDER BY em_andamento DESC, criada_em DESC");
+    $st = db()->prepare("SELECT * FROM tarefas WHERE produto = ? AND status = 'aberta' AND id NOT IN (SELECT tarefa_id FROM notas_tecnicas WHERE tarefa_id IS NOT NULL AND status = 'aberta') ORDER BY em_andamento DESC, criada_em DESC");
     $st->execute([produto()]);
     return $st->fetchAll();
 }

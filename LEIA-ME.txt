@@ -36,6 +36,11 @@ COMO ALIMENTAR
   Fiscal      — Notas Técnicas com data de homologação e produção; o site
                 calcula quantos dias faltam.
 
+BUSCA E TEMA
+  A caixa "Buscar no projeto" na barra lateral procura em versões, alterações,
+  tarefas e Notas Técnicas (busca.php). O botão "Tema claro" troca o tema e
+  fica guardado no navegador do visitante.
+
 A SUA INSTALAÇÃO
   O visitante digita a versão dele no alto da página. A partir daí, cada
   versão que ele ainda não tem ganha o selo "ainda não chegou". Fica gravado

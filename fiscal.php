@@ -18,29 +18,8 @@ function celula_prazo(?array $p): string {
 layout_topo('Fiscal', 'fiscal');
 titulo_pagina('Fiscal', 'Sefaz e Notas Técnicas');
 ?>
-<?php bloco_sefaz_estados($sefaz); ?>
+<?php bloco_sefaz_estados($sefaz, true); ?>
 <?php if (sefaz_ativo() && $sefaz && $sefaz['autorizadores']): ?>
-<section class="bloco" id="autorizadores">
-  <div class="bloco-cab"><h2>Serviço a serviço, por autorizador</h2></div>
-  <p class="nota">Cada bolinha é um serviço do autorizador (autorização, retorno, inutilização, consulta de protocolo, status, consulta de cadastro, eventos). SVRS e SVAN atendem vários estados de uma vez; SVC-AN e SVC-RS são as contingências nacionais.</p>
-  <div class="sefaz-grid">
-    <?php foreach ($sefaz['autorizadores'] as $a): $cor = sefaz_cor_geral($a); ?>
-      <div class="sefaz-item">
-        <h4><i class="bola bola-<?= $cor ?>"></i><?= e($a['sigla']) ?></h4>
-        <?php if (!empty($mapUf[$a['sigla']]) && count($mapUf[$a['sigla']]) > 1): ?><small><?= e(implode(' ', $mapUf[$a['sigla']])) ?></small><?php endif; ?>
-        <div class="sefaz-servicos">
-          <?php foreach ($a['servicos'] as $k => $v): if (in_array($v, ['verde', 'amarela', 'vermelha'], true)): ?><i class="bola bola-<?= $v ?>" title="<?= e($k) ?>"></i><?php endif; endforeach; ?>
-        </div>
-        <?php if ($a['tempo'] !== ''): ?><small>tempo médio <?= e($a['tempo']) ?></small><?php endif; ?>
-      </div>
-    <?php endforeach; ?>
-  </div>
-  <div class="sefaz-meta">
-    <span>lido <?= tempo_relativo($sefaz['em']) ?> (<?= data_hora_br($sefaz['em']) ?>)<?= ($sefaz['fonte'] ?? 'portal') === 'fornecedor' ? ' pela leitura do fornecedor' : ' no Portal da NF-e' ?></span>
-    <?php if (!empty($sefaz['erro'])): ?><span>última tentativa falhou: <?= e($sefaz['erro']) ?></span><?php endif; ?>
-    <a href="https://www.nfe.fazenda.gov.br/portal/disponibilidade.aspx" target="_blank" rel="noopener">ver no Portal da NF-e</a>
-  </div>
-</section>
 <?php $quedas = sefaz_quedas(7); if ($quedas):
     // agrupa por autorizador + início + fim: uma queda do SVRS é uma linha, com os estados dela
     $grupos = [];

@@ -16,35 +16,10 @@ $sefaz = sefaz_situacao();
 $sr = sefaz_resumo($sefaz);
 
 layout_topo('Visão geral', 'index');
+titulo_pagina('Visão geral', 'O estado agora');
 ?>
-<section class="hero">
-  <div class="hero-radar" aria-hidden="true">
-    <svg viewBox="0 0 400 400">
-      <circle cx="200" cy="200" r="60"/><circle cx="200" cy="200" r="120"/><circle cx="200" cy="200" r="180"/>
-      <line x1="200" y1="20" x2="200" y2="380"/><line x1="20" y1="200" x2="380" y2="200"/>
-      <path class="varredura" d="M200 200 L200 20 A180 180 0 0 1 380 200 Z"/>
-    </svg>
-  </div>
-  <div class="hero-texto">
-    <p class="hero-sistema"><?= e($sistema) ?></p>
-    <?php if ($atual): ?>
-      <div class="hero-versao"><?= e($atual['numero']) ?></div>
-      <p class="hero-legenda">
-        <?php if ($proxima): ?>
-          é a próxima versão, ainda não publicada
-          <?php if ($ultimaPub): ?>· a última publicada foi a <a href="versoes.php#v<?= $ultimaPub['id'] ?>"><?= e($ultimaPub['numero']) ?></a>, <?= tempo_relativo($ultimaPub['publicada_em']) ?><?php endif; ?>
-        <?php else: ?>
-          é a versão atual, publicada em <?= data_br($atual['publicada_em'], true) ?>
-        <?php endif; ?>
-      </p>
-    <?php else: ?>
-      <div class="hero-versao">—</div>
-      <p class="hero-legenda">Nenhuma versão cadastrada ainda. <a href="admin/">Cadastre a primeira</a>.</p>
-    <?php endif; ?>
-  </div>
-</section>
 
-<h2 class="secao-titulo">O estado agora</h2>
+
 <div class="cards">
   <a class="card" href="versoes.php">
     <b><?= $atual ? e($atual['numero']) : '—' ?></b>
@@ -78,7 +53,7 @@ layout_topo('Visão geral', 'index');
   </a>
 </div>
 
-<?php bloco_sefaz_estados($sefaz, true); ?>
+<?php bloco_sefaz_estados($sefaz); ?>
 
 <div class="duas-colunas">
   <section class="bloco">
