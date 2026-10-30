@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $s = sefaz_situacao(true);
         $r = sefaz_resumo($s);
         $ms = round((microtime(true) - $ini) * 1000);
-        if ($s && $s['autorizadores']) flash("Sefaz lida em {$ms} ms: {$r['no_ar']} de {$r['total']} estados no ar, " . count($s['autorizadores']) . ' autorizadores.');
+        if ($s && $s['autorizadores']) flash("Sefaz lida em {$ms} ms " . (($s['fonte'] ?? 'portal') === 'fornecedor' ? 'pelo Radar do fornecedor (o Portal da NF-e não respondeu: ' . ($s['erro_portal'] ?? 'sem detalhe') . ')' : 'direto no Portal da NF-e') . ": {$r['no_ar']} de {$r['total']} estados no ar, " . count($s['autorizadores']) . ' autorizadores.');
         else flash('Não consegui ler o portal: ' . ($s['erro'] ?? 'sem detalhe') . '. Verifique se a hospedagem permite conexões de saída (cURL) para nfe.fazenda.gov.br.', 'erro');
         redir('config.php');
     }
