@@ -11,6 +11,12 @@ REQUISITOS DA HOSPEDAGEM
   PHP 8.1 ou superior com PDO SQLite (padrão em praticamente todo CPanel).
   Nada de MySQL: o banco inteiro é o arquivo data/radar.db, criado sozinho.
 
+ATENÇÃO: VERSÃO DO PHP
+  O MultiPHP Manager grava a versão escolhida dentro do .htaccess da pasta
+  do subdomínio. O deploy pelo Git nunca sobrescreve esse arquivo (só
+  acrescenta as regras do Radar uma vez). Se o site voltar a dar erro 500
+  com "PHP 7.x" no diagnostico.php, escolha de novo 8.1+ no MultiPHP.
+
 INSTALAÇÃO (CPANEL)
   1. Em "Subdomínios", crie radar.magesistemas.com.br.
      O CPanel cria a pasta (normalmente public_html/radar ou radar.magesistemas.com.br).
