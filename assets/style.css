@@ -355,3 +355,20 @@ details > :not(summary) { animation: abrir .18s ease-out; }
 .meu-estado.uf-no_ar { color: var(--ok); border-color: var(--ok); background: var(--ok-suave); }
 .meu-estado.uf-instavel { color: var(--alerta); border-color: var(--alerta); background: var(--alerta-suave); }
 .meu-estado.uf-fora { color: var(--magenta); border-color: var(--magenta); background: var(--magenta-suave); }
+
+/* ---------- onda 3 ---------- */
+.barras.horas { height: 120px; gap: 4px; }
+.barras.horas .barra span { font-size: 9.5px; letter-spacing: 0; }
+@media print {
+  :root { --bg: #fff; --bg-2: #fff; --bg-3: #f3f3f3; --texto: #000; --texto-2: #333; --texto-3: #666; --linha: #ddd; --linha-forte: #bbb; }
+  .lateral, .topbar, .rodape, .so-tela, .compartilhar, .filtro-form, .pular { display: none !important; }
+  .pagina { margin: 0; } .conteudo { padding: 0; max-width: none; }
+  .bloco, .versao, .cards { border-color: #ccc; break-inside: avoid; }
+  details > :not(summary) { display: block !important; }
+  details:not([open]) > :not(summary) { display: block !important; }
+  summary { border: 0; padding: 0; font-weight: 800; }
+  summary::before { content: ""; }
+  a { color: #000; text-decoration: none; }
+  .nota-mage { border: 1px solid #000; }
+  .ao-vivo::before { animation: none; }
+}

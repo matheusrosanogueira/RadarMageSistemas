@@ -45,3 +45,10 @@ if (lojadev_ativo()) {
         if ($rel['ok'] && $rel['erros']) echo "avisos: " . implode('; ', $rel['erros']) . "\n";
     } else echo "sincronização: próxima em " . (int)($intervalo - $idade) . " min\n";
 } else echo "sincronização desligada\n";
+
+// 3. Avisos aos clientes
+if (avisos_ativos()) {
+    $g = avisos_gerar_versoes() + avisos_gerar_sefaz();
+    [$ok, $erro] = avisos_enviar(30);
+    echo "avisos: $g enfileirados, $ok enviados" . ($erro ? ", $erro com erro" : '') . "\n";
+} else echo "avisos desligados\n";

@@ -41,6 +41,11 @@
     if (limpar) limpar.addEventListener('click', function () { document.cookie = 'radar_versao=;path=/;max-age=0'; location.reload(); });
   }
 
+  // ao imprimir, abre todos os detalhes e fecha os que estavam fechados depois
+  var fechados = [];
+  window.addEventListener('beforeprint', function () { fechados = []; document.querySelectorAll('details:not([open])').forEach(function (d) { d.open = true; fechados.push(d); }); });
+  window.addEventListener('afterprint', function () { fechados.forEach(function (d) { d.open = false; }); });
+
   // atualiza "há X min" a cada minuto sem recarregar
   function relativo(iso) {
     var d = new Date(iso.replace(' ', 'T')); if (isNaN(d)) return null;

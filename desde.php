@@ -14,7 +14,7 @@ layout_topo('Desde a minha versão', 'versoes', $minha === '' ? 'Informe sua ver
   <div class="cards cards-3">
     <span class="card"><b><?= count($lista) ?></b><span>Versões a receber</span><small><?= e($lista[0]['numero']) ?> → <?= e(end($lista)['numero']) ?></small></span>
     <span class="card"><b><?= $totAlt ?></b><span>Alterações no total</span><small>somando todas as versões</small></span>
-    <span class="card"><b><?= count(array_filter($lista, fn($v) => ($v['homologacao'] ?? '') === 'liberada')) ?><i>/<?= count($lista) ?></i></b><span>Liberadas pela Mage</span><small><?= count(array_filter($lista, fn($v) => ($v['homologacao'] ?? '') === 'aguarde')) ? 'há versão marcada "aguarde"' : 'veja o selo em cada uma' ?></small></span>
+    <span class="card"><b><?= count(array_filter($lista, fn($v) => in_array($v['homologacao'] ?? '', ['liberada', 'ressalva'], true))) ?><i>/<?= count($lista) ?></i></b><span>Liberadas pela Mage</span><small><?= count(array_filter($lista, fn($v) => ($v['homologacao'] ?? '') === 'aguarde')) ? 'há versão marcada "aguarde"' : 'veja o selo em cada uma' ?></small></span>
   </div>
   <?php foreach ($lista as $v) cartao_versao($v, true); ?>
 <?php elseif ($minha !== ''): ?>

@@ -11,7 +11,7 @@ layout_topo($v['numero'], 'versoes', '', [
     'imagem' => http_build_query(['v' => $v['numero'], 't' => $v['codinome'] ?: ($v['publicada_em'] ? 'publicada em ' . data_br($v['publicada_em'], true) : 'em preparo'), 's' => mb_strimwidth($v['resumo'] ?? '', 0, 110, '…')]),
 ]);
 ?>
-<p class="trilha mono"><a href="versoes.php">Versões</a> / <?= e($v['numero']) ?></p>
+<p class="trilha mono"><a href="versoes.php">Versões</a> / <?= e($v['numero']) ?> · <a href="#" onclick="window.print();return false" class="so-tela">imprimir / salvar em PDF</a></p>
 <?php if ($v['publicada_em']): cartao_versao($v, true, false); else: ?>
 <section class="bloco proxima">
   <div class="bloco-cab"><h2>Vindo na próxima</h2><span class="selo">ainda não publicada</span></div>

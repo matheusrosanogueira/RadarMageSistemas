@@ -28,11 +28,16 @@ $in = fn(string $k, $padrao = '') => trim((string)($corpo[$k] ?? $_POST[$k] ?? $
 // autenticação (sefaz e versao em GET são públicos)
 $publico = $_SERVER['REQUEST_METHOD'] === 'GET' && in_array($acao, ['sefaz', 'versao', 'versoes'], true);
 if (!$publico) {
-    $auth = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    // o Apache do cPanel costuma esconder o Authorization; procura em todos os lugares
+    $auth = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+    if ($auth === '' && function_exists('apache_request_headers')) { $h = array_change_key_case(apache_request_headers(), CASE_LOWER); $auth = $h['authorization'] ?? ''; }
     $token = preg_match('/Bearer\s+(\S+)/i', $auth, $m) ? $m[1] : $in('token');
-    if ($token === '' || !hash_equals(api_token(), $token)) responder(['erro' => 'token inválido'], 401);
+    $esperado = api_token();
+    if ($token === '' || !hash_equals($esperado, $token)) responder(['erro' => 'token inválido'], 401);
 }
 $pdo = db(); $prod = produto();
+
+if ($acao === 'versao' && $_SERVER['REQUEST_METHOD'] === 'POST') $acao = 'versao_post';
 
 switch ($acao) {
     case 'versao':
@@ -60,7 +65,30 @@ switch ($acao) {
         responder(['ok' => true, 'registradas' => $n], 201);
     case 'versao_post':
     case 'publicar':
-        break;
+        $numero = $in('numero');
+        if (!preg_match('/^\d+(\.\d+){0,3}$/', $numero)) responder(['erro' => 'numero inválido (use 1.2.3)'], 400);
+        $v = versao_por_numero($numero);
+        if (!$v) {
+            $pdo->prepare("INSERT INTO versoes(produto, numero, codinome, resumo, notas, como_atualizar, origem) VALUES (?,?,?,?,?,?,'api')")
+                ->execute([$prod, $numero, $in('codinome'), $in('resumo'), $in('notas'), $in('como_atualizar')]);
+            $v = versao_por_numero($numero); versoes_todas(true); $criada = true;
+        } else {
+            $campos = []; $vals = [];
+            foreach (['codinome', 'resumo', 'notas', 'como_atualizar'] as $k) if (isset($corpo[$k]) || isset($_POST[$k])) { $campos[] = "$k=?"; $vals[] = $in($k); }
+            if ($campos) { $vals[] = $v['id']; $pdo->prepare("UPDATE versoes SET " . implode(', ', $campos) . ", editado=1 WHERE id=?")->execute($vals); }
+            $criada = false;
+        }
+        $publicou = false;
+        if ($in('publicar') === '1' && !$v['publicada_em']) {
+            $pdo->beginTransaction();
+            $pdo->prepare("UPDATE alteracoes SET versao_id=? WHERE produto=? AND versao_id IS NULL")->execute([$v['id'], $prod]);
+            $pdo->prepare("UPDATE tarefas SET versao_id=? WHERE produto=? AND status='encerrada' AND versao_id IS NULL AND encerrada_em >= ?")->execute([$v['id'], $prod, $v['criada_em']]);
+            $pdo->prepare("UPDATE versoes SET publicada_em=? WHERE id=?")->execute([date('Y-m-d H:i:s'), $v['id']]);
+            $prox = $in('proxima');
+            if (preg_match('/^\d+(\.\d+){0,3}$/', $prox)) $pdo->prepare("INSERT OR IGNORE INTO versoes(numero, produto, origem) VALUES (?,?,'api')")->execute([$prox, $prod]);
+            $pdo->commit(); $publicou = true; versoes_todas(true);
+        }
+        responder(['ok' => true, 'numero' => $numero, 'criada' => $criada, 'publicada' => $publicou || (bool)$v['publicada_em']], $criada ? 201 : 200);
     case 'homologar':
         $v = versao_por_numero($in('numero')); if (!$v) responder(['erro' => 'versão não encontrada'], 404);
         $h = $in('status'); if (!array_key_exists($h, homologacoes())) responder(['erro' => 'status inválido', 'aceitos' => array_keys(homologacoes())], 400);
@@ -89,4 +117,4 @@ if ($acao === 'versao' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     responder(['ok' => true, 'id' => $id, 'numero' => $numero, 'publicada' => $pub || !empty($v['publicada_em'])]);
 }
-responder(['erro' => 'ação desconhecida', 'acoes' => ['versao', 'versoes', 'sefaz', 'alteracao', 'alteracoes', 'homologar', 'cliente']], 400);
+responder(['erro' => 'ação desconhecida', 'acoes' => ['versao (GET/POST)', 'versoes', 'sefaz', 'alteracao', 'alteracoes', 'homologar', 'cliente']], 400);

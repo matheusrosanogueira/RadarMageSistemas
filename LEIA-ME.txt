@@ -58,6 +58,33 @@ BACKUP AUTOMÁTICO
   O cron guarda uma cópia do banco por semana em data/backups/ (últimos 8),
   disponíveis para download em Admin > Configurações > Backup.
 
+A VOZ DA MAGE (por versão, em Admin > Versões)
+  Homologação: em teste / liberada / liberada com ressalva / aguarde. Aparece
+  como selo na versão e decide o aviso aos clientes. Nota da Mage: uma frase
+  sua acima das notas do fornecedor ("Mage Sistemas diz: ...").
+
+CLIENTES (Admin > Clientes)
+  Cada cliente ganha uma chave. O link c.php?k=CHAVE identifica a loja (versão,
+  UF, módulos) e o Radar passa a mostrar o estado dela na Sefaz, filtrar o que a
+  afeta e abrir "Desde a minha versão" (desde.php). O Mage Lite pode informar a
+  versão instalada por c.php?k=CHAVE&v=7.5.6 ou pela API.
+
+AVISOS (Admin > Avisos)
+  Versão nova (quando a Mage libera, ou quando o fornecedor publica) e Sefaz do
+  estado fora do ar. Canais: e-mail (mail() do PHP) e WhatsApp por webhook, que
+  encaixa em qualquer API (Evolution, Z-API, MageZap). O cron gera e envia.
+
+API (api.php, token em Admin > Configurações)
+  Para o build do Mage Lite alimentar o Radar: registrar alterações, criar e
+  publicar versão, homologar, informar versão do cliente. Documentada no topo
+  do arquivo. Feed público em feed.php (RSS) e feed.php?formato=json.
+
+OUTRAS PÁGINAS
+  status.php (saúde do Radar), sefaz-diario.php (quedas do mês), v.php?n=X e
+  t.php?n=N (links compartilháveis com prévia para WhatsApp), impressão/PDF
+  pelo link "imprimir" de cada versão. Backup automático diário em data/backups
+  (feito pelo cron, guarda 14 dias).
+
 BUSCA E TEMA
   A caixa "Buscar no projeto" na barra lateral procura em versões, alterações,
   tarefas e Notas Técnicas (busca.php). O botão "Tema claro" troca o tema e

@@ -4,6 +4,7 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/sefaz.php';
 require_once __DIR__ . '/lojadev.php';
 require_once __DIR__ . '/clientes.php';
+require_once __DIR__ . '/avisos.php';
 
 /* ---------- escape ---------- */
 function e(?string $s): string { return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
@@ -63,9 +64,9 @@ function rotulo_dia(string $s): string {
 }
 
 /* ---------- versões ---------- */
-function versoes_todas(): array {
+function versoes_todas(bool $recarregar = false): array {
     static $c = null;
-    if ($c !== null) return $c;
+    if ($c !== null && !$recarregar) return $c;
     $rows = db()->prepare("SELECT * FROM versoes WHERE produto = ? ORDER BY publicada_em IS NULL DESC, criada_em DESC");
     $rows->execute([produto()]);
     $c = $rows->fetchAll();
@@ -355,8 +356,8 @@ function versoes_atras(string $minha): ?int {
 }
 
 function versao_por_numero(string $numero): ?array {
-    foreach (versoes_todas() as $v) if ($v['numero'] === $numero) return $v;
-    return null;
+    $st = db()->prepare("SELECT * FROM versoes WHERE produto = ? AND numero = ?"); $st->execute([produto(), $numero]);
+    return $st->fetch() ?: null;
 }
 
 function tarefa_por_numero(int $numero): ?array {
@@ -374,6 +375,36 @@ function url_base(): string {
     $proj = str_replace('\\', '/', realpath(RADAR_ROOT) ?: RADAR_ROOT);
     $caminho = ($raiz !== '' && str_starts_with($proj, $raiz)) ? substr($proj, strlen($raiz)) : preg_replace('#/admin$#', '', rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? '/'), '/\\'));
     return ($https ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . rtrim($caminho, '/');
+}
+
+/* ---------- diário da Sefaz ---------- */
+/** Resumo do mês (Y-m): por autorizador, quedas, tempo fora, pior hora; e total */
+function sefaz_diario(string $mes): array {
+    $ini = $mes . '-01 00:00:00'; $fim = date('Y-m-d H:i:s', strtotime($ini . ' +1 month'));
+    $st = db()->prepare("SELECT * FROM sefaz_quedas WHERE inicio < ? AND (fim IS NULL OR fim >= ?) ORDER BY inicio");
+    $st->execute([$fim, $ini]);
+    $por = []; $horas = array_fill(0, 24, 0); $vistas = [];
+    foreach ($st as $q) {
+        $k = $q['autorizador'] . '|' . $q['inicio']; // uma queda de autorizador conta uma vez
+        if (isset($vistas[$k])) { $por[$q['autorizador']]['ufs'][$q['uf']] = true; continue; }
+        $vistas[$k] = true;
+        $a = $q['autorizador'] ?: $q['uf'];
+        $por[$a] ??= ['quedas' => 0, 'vermelhas' => 0, 'segundos' => 0, 'ufs' => [], 'maior' => 0];
+        $i = max(strtotime($q['inicio']), strtotime($ini)); $f = min($q['fim'] ? strtotime($q['fim']) : time(), strtotime($fim));
+        $dur = max(0, $f - $i);
+        $por[$a]['quedas']++; if ($q['pior'] === 'vermelha') $por[$a]['vermelhas']++;
+        $por[$a]['segundos'] += $dur; $por[$a]['maior'] = max($por[$a]['maior'], $dur); $por[$a]['ufs'][$q['uf']] = true;
+        for ($t = $i; $t < $f; $t += 3600) $horas[(int)date('G', $t)]++;
+    }
+    uasort($por, fn($x, $y) => $y['segundos'] <=> $x['segundos']);
+    return ['por' => $por, 'horas' => $horas, 'total_quedas' => array_sum(array_column($por, 'quedas')), 'total_segundos' => array_sum(array_column($por, 'segundos'))];
+}
+
+function duracao_seg(int $s): string {
+    if ($s < 60) return $s ? 'menos de 1 min' : '0 min';
+    $m = intdiv($s, 60); if ($m < 60) return "$m min";
+    $h = intdiv($m, 60); $m %= 60; if ($h < 24) return $h . 'h' . ($m ? sprintf('%02d', $m) : '');
+    $d = intdiv($h, 24); return "$d " . ($d > 1 ? 'dias' : 'dia') . ($h % 24 ? ' e ' . ($h % 24) . 'h' : '');
 }
 
 /* ---------- etiquetas ---------- */

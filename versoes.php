@@ -40,6 +40,17 @@ titulo_pagina('Versões', 'O que vem e o que saiu');
   <p class="vazio">Nenhuma versão publicada ainda.</p>
 <?php endif; ?>
 
-<?php foreach ($publicadas as $v) cartao_versao($v, $v === $publicadas[0]); ?>
+<?php $todas = isset($_GET['todas']); $limiteV = 6; $recentes = $todas ? $publicadas : array_slice($publicadas, 0, $limiteV); $antigas = $todas ? [] : array_slice($publicadas, $limiteV); ?>
+<?php foreach ($recentes as $v) cartao_versao($v, $v === $publicadas[0]); ?>
+<?php if ($antigas): ?>
+<section class="bloco">
+  <div class="bloco-cab"><h2>Versões anteriores</h2><a href="?todas=1">mostrar todas por completo</a></div>
+  <ul class="lista">
+    <?php foreach ($antigas as $v): ?>
+      <li><span><a href="v.php?n=<?= e($v['numero']) ?>"><b><?= e($v['numero']) ?></b><?= $v['codinome'] ? ' — ' . e($v['codinome']) : '' ?></a><?= selo_homologacao($v) ?><?= selo_falta($v) ?><?php if ($v['resumo']): ?><small class="sub"><?= e(mb_strimwidth($v['resumo'], 0, 140, '…')) ?></small><?php endif; ?></span><time><?= data_br($v['publicada_em'], true) ?></time></li>
+    <?php endforeach; ?>
+  </ul>
+</section>
+<?php endif; ?>
 
 <?php layout_rodape();

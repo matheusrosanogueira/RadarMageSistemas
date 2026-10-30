@@ -19,6 +19,7 @@ layout_topo('Fiscal', 'fiscal');
 titulo_pagina('Fiscal', 'Sefaz e Notas Técnicas');
 ?>
 <?php bloco_sefaz_estados($sefaz, true); ?>
+<p class="nota" style="margin-top:-8px"><a href="sefaz-diario.php">Diário da Sefaz do mês</a> — quedas por autorizador, tempo fora e horários.</p>
 <?php if (sefaz_ativo() && $sefaz && $sefaz['autorizadores']): ?>
 <?php $quedas = sefaz_quedas(7); if ($quedas):
     // agrupa por autorizador + início + fim: uma queda do SVRS é uma linha, com os estados dela
@@ -26,7 +27,7 @@ titulo_pagina('Fiscal', 'Sefaz e Notas Técnicas');
     foreach ($quedas as $q) { $k = $q['autorizador'] . '|' . $q['inicio'] . '|' . ($q['fim'] ?? ''); $grupos[$k] ??= $q + ['ufs' => []]; $grupos[$k]['ufs'][] = $q['uf']; if ($q['pior'] === 'vermelha') $grupos[$k]['pior'] = 'vermelha'; }
 ?>
 <section class="bloco" id="quedas">
-  <div class="bloco-cab"><h2>Quedas nos últimos 7 dias</h2><span class="contagem"><?= count($grupos) ?><?= sefaz_quedas_hoje() ? ' · ' . count(array_filter($grupos, fn($g) => substr($g['inicio'], 0, 10) === date('Y-m-d'))) . ' hoje' : '' ?></span></div>
+  <div class="bloco-cab"><h2>Quedas nos últimos 7 dias</h2><a href="sefaz-diario.php">diário do mês</a><span class="contagem"><?= count($grupos) ?><?= sefaz_quedas_hoje() ? ' · ' . count(array_filter($grupos, fn($g) => substr($g['inicio'], 0, 10) === date('Y-m-d'))) . ' hoje' : '' ?></span></div>
   <div class="tabela-rolagem">
   <table class="tabela">
     <thead><tr><th>Autorizador</th><th>Estados</th><th>Começou</th><th>Durou</th><th>Pior momento</th></tr></thead>
