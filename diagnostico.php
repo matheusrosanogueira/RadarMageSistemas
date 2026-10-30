@@ -23,5 +23,11 @@ error_reporting(E_ALL); ini_set('display_errors', '1');
 if (version_compare(PHP_VERSION, '8.1.0', '>=')) {
     try { require __DIR__ . '/inc/functions.php'; $v = versao_atual(); echo "banco OK; versoes cadastradas: " . count(versoes_todas()) . "\n"; }
     catch (Throwable $e) { echo "<<< ERRO: " . get_class($e) . ": " . $e->getMessage() . " em " . $e->getFile() . ":" . $e->getLine() . "\n"; }
+    echo "\n--- renderizando cada pagina (erros aparecem abaixo) ---\n";
+    foreach (array('index', 'agora', 'versoes', 'planejado', 'fiscal', 'projeto', 'busca') as $pg) {
+        $_GET = array('q' => 'nf'); ob_start();
+        try { require __DIR__ . '/' . $pg . '.php'; $html = ob_get_clean(); echo "$pg.php: OK (" . strlen($html) . " bytes)\n"; }
+        catch (Throwable $e) { ob_end_clean(); echo "$pg.php: <<< ERRO " . get_class($e) . ": " . $e->getMessage() . " em " . basename($e->getFile()) . ":" . $e->getLine() . "\n"; }
+    }
 } else echo "(pulado: versao do PHP antiga)\n";
 echo "\nSe tudo acima esta OK e o site ainda da erro 500, o problema e o .htaccess: renomeie-o para .htaccess.off e teste de novo.\n";
