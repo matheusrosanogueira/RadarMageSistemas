@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dados = [post_int('numero'), post('titulo'), post('descricao'), post('area'), post('tipo') ?: 'melhoria', post('em_andamento') ? 1 : 0, $status, post_int('versao_id'), normaliza_dt(post('criada_em'), true), $encerrada];
         try {
             if ($id) {
-                $pdo->prepare("UPDATE tarefas SET numero=?, titulo=?, descricao=?, area=?, tipo=?, em_andamento=?, status=?, versao_id=?, criada_em=?, encerrada_em=? WHERE id=?")->execute([...$dados, $id]);
+                $pdo->prepare("UPDATE tarefas SET editado=1, numero=?, titulo=?, descricao=?, area=?, tipo=?, em_andamento=?, status=?, versao_id=?, criada_em=?, encerrada_em=? WHERE id=?")->execute([...$dados, $id]);
                 flash('Tarefa salva.');
             } else {
                 $pdo->prepare("INSERT INTO tarefas(numero, titulo, descricao, area, tipo, em_andamento, status, versao_id, criada_em, encerrada_em, produto) VALUES (?,?,?,?,?,?,?,?,?,?,?)")->execute([...$dados, produto()]);
@@ -102,7 +102,7 @@ admin_topo('Tarefas', 'tarefas');
       <?php foreach ($abertas as $t): ?>
         <tr>
           <td class="nowrap"><?= $t['em_andamento'] ? '<i class="ponto"></i>' : '' ?>#<?= (int)$t['numero'] ?></td>
-          <td><a href="?editar=<?= $t['id'] ?>"><?= e($t['titulo']) ?></a><?php if ($t['area']): ?> <i class="tag"><?= e($t['area']) ?></i><?php endif; ?></td>
+          <td><a href="?editar=<?= $t['id'] ?>"><?= e($t['titulo']) ?></a><?php if ($t['area']): ?> <i class="tag"><?= e($t['area']) ?></i><?php endif; ?><?php if ($t['origem'] === 'lojadev'): ?> <i class="tag tag-origem">fornecedor</i><?php endif; ?></td>
           <td><i class="tag <?= tipo_classe($t['tipo']) ?>"><?= e($t['tipo']) ?></i></td>
           <td class="nowrap"><?= tempo_relativo($t['criada_em']) ?></td>
           <td class="nowrap acoes-inline">

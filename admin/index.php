@@ -10,11 +10,13 @@ $ultimas = alteracoes_recentes(10);
 
 admin_topo('Início', 'inicio');
 ?>
-<div class="adm-cards">
+<div class="adm-cards cinco">
   <a href="versoes.php"><b><?= $proxima ? e($proxima['numero']) : '—' ?></b><span>Próxima versão</span><small><?= $proxima ? 'em preparo' : 'crie uma em Versões' ?></small></a>
   <a href="alteracoes.php"><b><?= count($prontas) ?></b><span>Alterações no ciclo</span><small>vão na próxima</small></a>
   <a href="tarefas.php"><b><?= count($abertas) ?></b><span>Tarefas abertas</span><small><?= count(array_filter($abertas, fn($t) => $t['em_andamento'])) ?> em andamento</small></a>
   <a href="fiscal.php"><b><?= count($nts) ?></b><span>NTs em aberto</span><small>prazos da Sefaz</small></a>
+  <?php $rel = lojadev_relatorio(); ?>
+  <a href="config.php"><b><?= $rel && !empty($rel['em']) ? e(tempo_relativo($rel['em'])) : '—' ?></b><span>Fornecedor</span><small><?= !lojadev_ativo() ? 'sincronização desligada' : ($rel ? ($rel['ok'] ? 'sincronizado' : 'última falhou') : 'nunca sincronizou') ?></small></a>
 </div>
 
 <div class="adm-grid">

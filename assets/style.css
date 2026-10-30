@@ -247,3 +247,53 @@ details[open] > summary::before { transform: rotate(45deg); }
 .sefaz-legenda { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--texto-2); margin: 0 0 12px; }
 .sefaz-legenda span { display: inline-flex; align-items: center; gap: 6px; }
 .sefaz-erro { background: var(--alerta-suave); border-left: 3px solid var(--alerta); padding: 8px 12px; border-radius: 0 6px 6px 0; font-size: 13.5px; color: var(--texto-2); }
+
+/* ---------- cabeçalho: frase da Sefaz ---------- */
+.sefaz-frase { display: block; font-size: 12.5px; font-weight: 700; color: var(--ok); }
+.sefaz-frase.sefaz-inst { color: var(--alerta); }
+.sefaz-frase.sefaz-fora { color: var(--magenta); }
+.sefaz-frase:hover { text-decoration: underline; }
+
+/* ---------- Sefaz por estado ---------- */
+.ao-vivo { font-size: 11px; font-weight: 700; color: var(--magenta); margin-left: 8px; vertical-align: middle; }
+.ao-vivo::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--magenta); margin-right: 5px; animation: pulsar 1.6s ease-in-out infinite; }
+@keyframes pulsar { 50% { opacity: .25; } }
+.sefaz-titulo { margin: 4px 0 10px; font-size: 18px; font-weight: 800; letter-spacing: -.01em; }
+.sefaz-titulo.ok { color: var(--ok); } .sefaz-titulo.inst { color: var(--alerta); } .sefaz-titulo.fora { color: var(--magenta); }
+.uf-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px; margin-bottom: 12px; }
+.uf { display: flex; align-items: center; justify-content: center; height: 36px; border-radius: 7px; font-weight: 800; font-size: 13px; background: var(--bg-3); color: var(--texto-2); border: 1px solid transparent; }
+.uf-no_ar { background: rgba(60,203,138,.14); color: var(--ok); border-color: rgba(60,203,138,.35); }
+.uf-instavel { background: var(--alerta-suave); color: var(--alerta); border-color: rgba(245,182,64,.45); }
+.uf-fora { background: var(--magenta-suave); color: var(--magenta); border-color: rgba(226,58,157,.5); }
+.bola-violet { background: var(--violet); } .bola-cinza { background: var(--texto-3); }
+.sefaz-meta a { font-weight: 600; }
+
+/* ---------- O projeto: ritmo e tamanho ---------- */
+.duas-colunas.iguais { grid-template-columns: 1fr 1fr; }
+.barras { display: flex; gap: 8px; align-items: flex-end; height: 150px; padding-top: 18px; }
+.barra { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; }
+.barra b { font-size: 11.5px; color: var(--texto-2); margin-bottom: 4px; white-space: nowrap; }
+.barra b small { display: block; color: var(--texto-3); font-size: 10.5px; }
+.barra i { display: block; width: 100%; height: max(var(--h), 2px); border-radius: 4px 4px 0 0; }
+.barra em { display: flex; gap: 2px; width: 100%; align-items: flex-end; height: 100%; }
+.barra em i { flex: 1; }
+.barra-violet { background: var(--violet); } .barra-magenta { background: var(--magenta); opacity: .85; } .barra-cinza { background: var(--texto-3); opacity: .6; }
+.barra span { margin-top: 6px; font-size: 11.5px; color: var(--texto-3); text-transform: uppercase; letter-spacing: .04em; }
+.barras.duplas { height: 190px; }
+.frentes { list-style: none; margin: 0; padding: 0; }
+.frentes li { display: grid; grid-template-columns: 150px 1fr 48px; gap: 10px; align-items: center; padding: 5px 0; font-size: 13.5px; }
+.frentes li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.frentes li i { display: block; height: 10px; border-radius: 5px; background: var(--violet); width: var(--w); min-width: 3px; opacity: .85; }
+.frentes li b { text-align: right; color: var(--texto-2); }
+.tamanho { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+.tamanho div { background: var(--bg-3); border-radius: 8px; padding: 10px 12px; }
+.tamanho dt { font-size: 12px; color: var(--texto-2); }
+.tamanho dd { margin: 2px 0 0; font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+.pulso { gap: 3px; }
+@media (max-width: 720px) {
+  .duas-colunas.iguais { grid-template-columns: 1fr; }
+  .frentes li { grid-template-columns: 110px 1fr 44px; }
+  .tamanho { grid-template-columns: 1fr; }
+  .barra b { font-size: 10px; }
+  .instalacao-atual .sefaz-frase { display: inline; margin-left: 8px; }
+}

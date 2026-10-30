@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = post_int('id');
         $dados = [post('titulo'), post('area'), post('ref'), post('interno') ? 1 : 0, post_int('versao_id'), normaliza_dt(post('criada_em'), true)];
         if ($id) {
-            $pdo->prepare("UPDATE alteracoes SET titulo=?, area=?, ref=?, interno=?, versao_id=?, criada_em=? WHERE id=?")->execute([...$dados, $id]);
+            $pdo->prepare("UPDATE alteracoes SET editado=1, titulo=?, area=?, ref=?, interno=?, versao_id=?, criada_em=? WHERE id=?")->execute([...$dados, $id]);
             flash('Alteração salva.');
         } else {
             $pdo->prepare("INSERT INTO alteracoes(titulo, area, ref, interno, versao_id, criada_em, produto) VALUES (?,?,?,?,?,?,?)")->execute([...$dados, produto()]);
@@ -141,7 +141,7 @@ admin_topo('Alterações', 'alteracoes');
         <?php foreach ($lista as $a): ?>
           <tr class="<?= $a['interno'] ? 'interna' : '' ?>">
             <td><input type="checkbox" name="ids[]" value="<?= $a['id'] ?>"></td>
-            <td><?= e($a['titulo']) ?><?php if ($a['interno']): ?> <i class="tag">interna</i><?php endif; ?><?php if ($a['ref']): ?> <code><?= e($a['ref']) ?></code><?php endif; ?></td>
+            <td><?= e($a['titulo']) ?><?php if ($a['interno']): ?> <i class="tag">interna</i><?php endif; ?><?php if ($a['origem'] === 'lojadev'): ?> <i class="tag tag-origem" title="<?= $a['editado'] ? 'importada do fornecedor e editada aqui' : 'importada do fornecedor' ?>"><?= $a['editado'] ? 'fornecedor · editada' : 'fornecedor' ?></i><?php endif; ?><?php if ($a['ref']): ?> <code><?= e($a['ref']) ?></code><?php endif; ?></td>
             <td><?= e($a['area']) ?></td>
             <td><?= $a['versao_numero'] ? e($a['versao_numero']) : '<span class="ajuda">próximo ciclo</span>' ?></td>
             <td class="nowrap"><?= data_hora_br($a['criada_em']) ?></td>

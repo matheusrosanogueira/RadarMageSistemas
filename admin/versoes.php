@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dados = [$numero, post('codinome'), post('resumo'), post('notas'), post('como_atualizar'), $pub];
         try {
             if ($id) {
-                $pdo->prepare("UPDATE versoes SET numero=?, codinome=?, resumo=?, notas=?, como_atualizar=?, publicada_em=? WHERE id=?")->execute([...$dados, $id]);
+                $pdo->prepare("UPDATE versoes SET editado=1, numero=?, codinome=?, resumo=?, notas=?, como_atualizar=?, publicada_em=? WHERE id=?")->execute([...$dados, $id]);
                 flash("Versão $numero salva.");
             } else {
                 $pdo->prepare("INSERT INTO versoes(numero, codinome, resumo, notas, como_atualizar, publicada_em, produto) VALUES (?,?,?,?,?,?,?)")->execute([...$dados, produto()]);
@@ -130,7 +130,7 @@ admin_topo('Versões', 'versoes');
       <?php foreach ($versoes as $v):
         $n = $pdo->prepare("SELECT COUNT(*) FROM alteracoes WHERE versao_id=?"); $n->execute([$v['id']]); $n = (int)$n->fetchColumn(); ?>
         <tr>
-          <td><b><?= e($v['numero']) ?></b></td>
+          <td><b><?= e($v['numero']) ?></b><?php if ($v['origem'] === 'lojadev'): ?> <i class="tag tag-origem"><?= $v['editado'] ? 'fornecedor · editada' : 'fornecedor' ?></i><?php endif; ?></td>
           <td><?= e($v['codinome']) ?></td>
           <td><?= $n ?></td>
           <td><?= $v['publicada_em'] ? 'publicada em ' . data_br($v['publicada_em'], true) : '<i class="tag tag-prox">próxima</i>' ?></td>

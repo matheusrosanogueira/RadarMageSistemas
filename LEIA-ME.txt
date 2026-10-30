@@ -41,14 +41,35 @@ A SUA INSTALAÇÃO
   versão que ele ainda não tem ganha o selo "ainda não chegou". Fica gravado
   no navegador dele por um ano.
 
+SINCRONIZAÇÃO COM O FORNECEDOR (radar.lojadev.com.br)
+  O Radar Mage lê o Radar do fornecedor e importa sozinho: as versões com
+  as notas completas, as tarefas (issues), as Notas Técnicas com prazos,
+  as alterações (com hash e hora) e as estatísticas do projeto (O projeto).
+  Roda pelo cron (abaixo) a cada 30 minutos, ou pelo botão "Sincronizar
+  agora" em Admin > Configurações > Fornecedor.
+  O que você editar no painel fica marcado "fornecedor · editada" e a
+  sincronização não sobrescreve. O que você cadastrar à mão nunca é tocado.
+  "Substituições de texto" troca termos ao importar (ex.: Radar LojaDev=>Radar Mage).
+
+CRON (um comando só)
+  Admin > Configurações > Sefaz mostra o comando. Agende no CPanel > Cron
+  Jobs a cada 10 minutos (*/10 * * * *):
+    curl -s "https://radar.magesistemas.com.br/cron.php?token=SEU_TOKEN" > /dev/null
+  Ele lê a Sefaz toda vez e sincroniza com o fornecedor quando passa o intervalo.
+
 SEFAZ (ESTADOS NO AR)
   O card "Estados no ar" e a seção "Sefaz agora" (página Fiscal) leem a
   página pública de disponibilidade do Portal da NF-e. Sem certificado.
-  A leitura renova sozinha quando alguém visita o site e o cache tem mais
-  de 10 minutos. Para manter sempre fresca, agende no CPanel > Cron Jobs
-  (a cada 10 minutos) o comando que está em Admin > Configurações > Sefaz.
+  Se o portal não responder, o Radar usa a leitura do fornecedor
+  (radar.lojadev.com.br/sefaz.php) como segunda fonte; se as duas falharem,
+  mantém a última leitura boa e avisa há quantas tentativas está parado.
+  Cada estado é classificado com memória: "no ar", "instável" (saiu do
+  verde agora, ou voltou há menos de 10 min) e "fora" (fora do verde em
+  duas leituras seguidas). As quedas ficam registradas por 90 dias e
+  aparecem na página Fiscal ("Quedas nos últimos 7 dias").
   Se a leitura falhar sempre, a hospedagem pode estar bloqueando conexões
-  de saída (cURL) — peça ao suporte para liberar nfe.fazenda.gov.br.
+  de saída (cURL) — peça ao suporte para liberar nfe.fazenda.gov.br e
+  radar.lojadev.com.br.
 
 BACKUP
   Configurações > "Baixar banco (.db)". Guarde o arquivo. Para restaurar,
@@ -60,6 +81,7 @@ CORES
 
 ESTRUTURA
   index.php, agora.php, versoes.php, planejado.php, fiscal.php, projeto.php
+  cron.php    agendador (Sefaz + sincronização); sefaz-atualizar.php só a Sefaz
   admin/      painel (login, alterações, versões, tarefas, fiscal, config)
   inc/        banco e funções (bloqueado ao público)
   data/       radar.db (bloqueado ao público)

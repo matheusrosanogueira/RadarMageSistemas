@@ -39,6 +39,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         else flash('Não consegui ler o portal: ' . ($s['erro'] ?? 'sem detalhe') . '. Verifique se a hospedagem permite conexões de saída (cURL) para nfe.fazenda.gov.br.', 'erro');
         redir('config.php');
     }
+    if ($acao === 'fornecedor') {
+        foreach (['fonte_url', 'sinc_intervalo', 'sinc_substituicoes'] as $k) cfg_set($k, post($k));
+        cfg_set('sinc_ativo', post('sinc_ativo') ? '1' : '0');
+        flash('Configuração do fornecedor salva.');
+        redir('config.php');
+    }
+    if ($acao === 'sincronizar') {
+        set_time_limit(180);
+        $ini = microtime(true);
+        $r = lojadev_sincronizar(true);
+        $ms = round((microtime(true) - $ini) * 1000);
+        if ($r['ok']) {
+            $c = $r['contagem'];
+            flash("Sincronizado em {$ms} ms: " . ($c['versoes_novas'] ?? 0) . ' versões novas, ' . ($c['tarefas_novas'] ?? 0) . ' tarefas novas, ' . ($c['nts_novas'] ?? 0) . ' NTs novas, ' . (($c['feed_novas'] ?? 0) + ($c['historico_novas'] ?? 0)) . ' alterações novas' . ($r['erros'] ? ' · avisos: ' . implode('; ', $r['erros']) : '') . '.');
+        } else flash('A sincronização falhou: ' . implode('; ', $r['erros']), 'erro');
+        redir('config.php');
+    }
     if ($acao === 'sefaz_token') { cfg_set('sefaz_token', bin2hex(random_bytes(12))); flash('Token renovado. Atualize o cron.'); redir('config.php'); }
 
     if ($acao === 'restaurar' && !empty($_FILES['arquivo']['tmp_name'])) {
@@ -118,11 +135,31 @@ admin_topo('Configurações', 'config');
     <?= csrf_campo() ?><input type="hidden" name="acao" value="sefaz_testar">
     <button type="submit">Ler a Sefaz agora</button>
   </form>
-  <p class="ajuda" style="margin-top:14px"><b>Para não depender das visitas</b>, agende no CPanel (Cron Jobs) a cada 10 minutos:</p>
-  <textarea readonly rows="2" class="mono" onclick="this.select()">curl -s "<?= e($urlCron) ?>" > /dev/null</textarea>
+  <p class="ajuda" style="margin-top:14px"><b>Para não depender das visitas</b>, agende no CPanel (Cron Jobs) a cada 10 minutos. O mesmo comando lê a Sefaz e sincroniza com o fornecedor:</p>
+  <textarea readonly rows="2" class="mono" onclick="this.select()">curl -s "<?= e(str_replace('sefaz-atualizar.php', 'cron.php', $urlCron)) ?>" > /dev/null</textarea>
   <form method="post" data-confirmar="Gerar um token novo? O cron atual vai parar de funcionar até ser atualizado." style="margin-top:8px">
     <?= csrf_campo() ?><input type="hidden" name="acao" value="sefaz_token">
     <button type="submit" class="btn-mini">renovar token</button>
+  </form>
+</section>
+
+<section class="painel">
+  <h2>Fornecedor (Radar LojaDev)</h2>
+  <?php $rel = lojadev_relatorio(); ?>
+  <p class="ajuda">O Radar Mage lê o Radar do fornecedor e traz as versões com as notas completas, as tarefas, as Notas Técnicas, as alterações e as estatísticas do projeto. O que você editar aqui no painel fica marcado como seu e não é sobrescrito.<?php if ($rel && !empty($rel['em'])): ?> Última sincronização <?= tempo_relativo($rel['em']) ?><?= !empty($rel['versao_fonte']) ? ', fonte na ' . e($rel['versao_fonte']) : '' ?><?= !empty($rel['erros']) ? ' (avisos: ' . e(implode('; ', $rel['erros'])) . ')' : '' ?>.<?php endif; ?></p>
+  <form method="post">
+    <?= csrf_campo() ?><input type="hidden" name="acao" value="fornecedor">
+    <label class="check"><input type="checkbox" name="sinc_ativo" value="1" <?= lojadev_ativo() ? 'checked' : '' ?>> Sincronizar com o fornecedor</label>
+    <div class="linha-campos">
+      <label>Endereço do Radar do fornecedor<input name="fonte_url" value="<?= e(cfg('fonte_url')) ?>"></label>
+      <label>Intervalo (minutos)<input type="number" name="sinc_intervalo" min="5" value="<?= e(cfg('sinc_intervalo', '30')) ?>"></label>
+    </div>
+    <label>Substituições de texto <small>uma por linha, no formato <code>de=>para</code>; aplicadas em títulos e notas ao importar</small><textarea name="sinc_substituicoes" rows="3" class="mono"><?= e(cfg('sinc_substituicoes')) ?></textarea></label>
+    <button type="submit" class="btn-sec">Salvar</button>
+  </form>
+  <form method="post" style="margin-top:12px">
+    <?= csrf_campo() ?><input type="hidden" name="acao" value="sincronizar">
+    <button type="submit">Sincronizar agora</button>
   </form>
 </section>
 

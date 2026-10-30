@@ -88,10 +88,42 @@ function db_schema(PDO $pdo): void {
         observacao TEXT DEFAULT '',
         criada_em TEXT NOT NULL DEFAULT (datetime('now','localtime'))
     );
+    CREATE TABLE IF NOT EXISTS sefaz_historico (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        em TEXT NOT NULL,
+        fonte TEXT NOT NULL DEFAULT 'portal',
+        estados TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS sefaz_quedas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        uf TEXT NOT NULL,
+        autorizador TEXT NOT NULL DEFAULT '',
+        inicio TEXT NOT NULL,
+        fim TEXT,
+        pior TEXT NOT NULL DEFAULT 'amarela'
+    );
     CREATE INDEX IF NOT EXISTS ix_alt_versao ON alteracoes(versao_id);
     CREATE INDEX IF NOT EXISTS ix_alt_data ON alteracoes(criada_em);
     CREATE INDEX IF NOT EXISTS ix_tar_status ON tarefas(status);
+    CREATE INDEX IF NOT EXISTS ix_sh_em ON sefaz_historico(em);
+    CREATE INDEX IF NOT EXISTS ix_sq_uf ON sefaz_quedas(uf, fim);
     ");
+
+    // migrações: colunas acrescentadas depois da primeira versão
+    $novas = [
+        'versoes'         => ['origem TEXT NOT NULL DEFAULT \'manual\'', 'editado INTEGER NOT NULL DEFAULT 0', 'alteracoes_total INTEGER', 'assuntos_total INTEGER'],
+        'alteracoes'      => ['origem TEXT NOT NULL DEFAULT \'manual\'', 'editado INTEGER NOT NULL DEFAULT 0'],
+        'tarefas'         => ['origem TEXT NOT NULL DEFAULT \'manual\'', 'editado INTEGER NOT NULL DEFAULT 0', 'labels TEXT DEFAULT \'\'', 'responsaveis TEXT DEFAULT \'\'', 'comentarios INTEGER DEFAULT 0'],
+        'notas_tecnicas'  => ['origem TEXT NOT NULL DEFAULT \'manual\'', 'editado INTEGER NOT NULL DEFAULT 0'],
+    ];
+    foreach ($novas as $tabela => $colunas) {
+        $existentes = array_column($pdo->query("PRAGMA table_info($tabela)")->fetchAll(), 'name');
+        foreach ($colunas as $def) {
+            $nome = explode(' ', $def)[0];
+            if (!in_array($nome, $existentes, true)) $pdo->exec("ALTER TABLE $tabela ADD COLUMN $def");
+        }
+    }
+    $pdo->exec("CREATE UNIQUE INDEX IF NOT EXISTS ux_alt_ref ON alteracoes(produto, ref) WHERE ref <> ''");
 }
 
 function db_seed(PDO $pdo): void {
@@ -103,6 +135,10 @@ function db_seed(PDO $pdo): void {
         'site_url'        => 'https://magesistemas.com.br',
         'descricao'       => 'O painel do cliente sobre o Mage Lite: o que está sendo feito agora, o que vem na próxima versão, os prazos da Sefaz e o histórico por versão.',
         'projeto_texto'   => "## Por que o Radar existe\n\nQuem usa o Mage Lite precisa saber três coisas: o que já saiu, o que está para sair e o que a Sefaz vai exigir em breve. O Radar responde às três num lugar só, sem precisar ligar para o suporte.\n\n## Como ler\n\n- **Agora** é o trabalho conforme entra, alteração por alteração.\n- **Versões** é onde cada alteração aparece já organizada no pacote em que sai, com as notas de leitura obrigatória no alto.\n- **Planejado** são as tarefas grandes, numeradas, do momento em que entram até fecharem.\n- **Fiscal** acompanha as Notas Técnicas da Sefaz e quanto tempo falta para cada prazo.\n\n## Sua versão\n\nInforme a versão instalada no seu cliente no alto da página. A partir daí o Radar marca o que ainda não chegou até você.",
+        'fonte_url'       => 'https://radar.lojadev.com.br',
+        'sinc_ativo'      => '1',
+        'sinc_intervalo'  => '30',
+        'sinc_substituicoes' => "Radar LojaDev=>Radar Mage",
         'admin_usuario'   => 'admin',
         'admin_senha'     => '', // definido no primeiro acesso ao /admin
     ];

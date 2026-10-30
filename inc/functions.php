@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/sefaz.php';
+require_once __DIR__ . '/lojadev.php';
 
 /* ---------- escape ---------- */
 function e(?string $s): string { return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
@@ -162,6 +163,23 @@ function pulso_semanal(int $semanas = 8): array {
         if ($i >= 0 && $i < $semanas) $barras[$i]++;
     }
     return $barras;
+}
+
+/** Estatísticas do projeto vindas da sincronização (ou null) */
+function projeto_stats(): ?array {
+    $j = cfg('projeto_stats'); if ($j === '') return null;
+    $d = json_decode($j, true); return is_array($d) && !empty($d['pulso']) ? $d : null;
+}
+
+/** Alterações por dia nos últimos N dias (do próprio banco) — [['Y-m-d', n], ...] */
+function pulso_diario(int $dias = 56): array {
+    $ini = (new DateTime('today'))->modify('-' . ($dias - 1) . ' days');
+    $st = db()->prepare("SELECT substr(criada_em,1,10) d, COUNT(*) n FROM alteracoes WHERE produto=? AND criada_em >= ? GROUP BY d");
+    $st->execute([produto(), $ini->format('Y-m-d')]);
+    $m = []; foreach ($st as $r) $m[$r['d']] = (int)$r['n'];
+    $out = []; $d = clone $ini;
+    for ($i = 0; $i < $dias; $i++) { $k = $d->format('Y-m-d'); $out[] = [$k, $m[$k] ?? 0]; $d->modify('+1 day'); }
+    return $out;
 }
 
 function areas_conhecidas(): array {

@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = post_int('id');
         $status = in_array(post('status'), ['aberta', 'atendida', 'nao_aplica'], true) ? post('status') : 'aberta';
         $dados = [post('codigo'), post('assunto'), post_data('homologacao'), post_data('producao'), post_int('tarefa_id'), $status, post('observacao')];
-        if ($id) { $pdo->prepare("UPDATE notas_tecnicas SET codigo=?, assunto=?, homologacao=?, producao=?, tarefa_id=?, status=?, observacao=? WHERE id=?")->execute([...$dados, $id]); flash('Nota Técnica salva.'); }
+        if ($id) { $pdo->prepare("UPDATE notas_tecnicas SET editado=1, codigo=?, assunto=?, homologacao=?, producao=?, tarefa_id=?, status=?, observacao=? WHERE id=?")->execute([...$dados, $id]); flash('Nota Técnica salva.'); }
         else { $pdo->prepare("INSERT INTO notas_tecnicas(codigo, assunto, homologacao, producao, tarefa_id, status, observacao, produto) VALUES (?,?,?,?,?,?,?,?)")->execute([...$dados, produto()]); flash('Nota Técnica cadastrada.'); }
         redir('fiscal.php');
     }

@@ -78,6 +78,8 @@ layout_topo('Visão geral', 'index');
   </a>
 </div>
 
+<?php bloco_sefaz_estados($sefaz, true); ?>
+
 <div class="duas-colunas">
   <section class="bloco">
     <div class="bloco-cab">

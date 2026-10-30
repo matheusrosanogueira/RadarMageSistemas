@@ -12,7 +12,7 @@ function rotulo_areas(int $n): string {
     return $m === 1 ? 'Ver a alteração, por área' : "Ver as $m alterações, agrupadas por área";
 }
 
-function bloco_areas(array $alteracoes, string $rotulo): void {
+function bloco_areas(array $alteracoes, string $rotulo, int $totalReal = 0): void {
     if (!$alteracoes) return;
     $grupos = agrupar_por_area($alteracoes);
     $limite = 50;
@@ -28,8 +28,8 @@ function bloco_areas(array $alteracoes, string $rotulo): void {
           <?php endforeach; ?>
         </ul>
       <?php endforeach; ?>
-      <?php if (count($alteracoes) > $limite): ?>
-        <p class="nota">E mais <?= count($alteracoes) - $limite ?> alterações neste ciclo, não listadas aqui.</p>
+      <?php $totalCiclo = max(count($alteracoes), $totalReal); if ($totalCiclo > min($limite, count($alteracoes))): ?>
+        <p class="nota">E mais <?= $totalCiclo - min($limite, count($alteracoes)) ?> alterações neste ciclo, não listadas aqui.</p>
       <?php endif; ?>
     </details>
     <?php
@@ -74,8 +74,8 @@ titulo_pagina('Versões', 'O que vem e o que saiu');
   <header class="versao-cab">
     <h2><span class="versao-numero"><?= e($v['numero']) ?></span><?php if ($v['codinome']): ?><em><?= e($v['codinome']) ?></em><?php endif; ?></h2>
     <p class="versao-meta">
-      <?php if ($issues): ?><?= count($issues) ?> <?= plural(count($issues), 'assunto', 'assuntos') ?> · <?php endif; ?>
-      <?= count($alts) ?> <?= plural(count($alts), 'alteração', 'alterações') ?> · publicada em <?= data_br($v['publicada_em']) ?>
+      <?php $nAss = max(count($issues), (int)($v['assuntos_total'] ?? 0)); if ($nAss): ?><?= $nAss ?> <?= plural($nAss, 'assunto', 'assuntos') ?> · <?php endif; ?>
+      <?php $tot = max((int)($v['alteracoes_total'] ?? 0), count($alts)); ?><?= $tot ?> <?= plural($tot, 'alteração', 'alterações') ?> · publicada em <?= data_br($v['publicada_em']) ?>
       <?= selo_falta($v) ?>
     </p>
   </header>
